@@ -1,0 +1,9 @@
+<!DOCTYPE html>
+html(lang="en")
+  head
+    title #{page.title} | #{site.title}
+  body
+    h1
+      a(href=page.author.link)= page.author.name
+    h2= page.author.link
+    p!= page.content

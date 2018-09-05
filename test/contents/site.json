@@ -1,0 +1,22 @@
+{
+  "title": "TEST SITE",
+  "routes": [
+    {
+      "path": "/",
+      "template": "index.pug",
+      "file": "index.json",
+      "deps": [
+        {
+          "path": "/:filename",
+          "dir": "blog",
+          "template": "item.pug"
+        }
+      ]
+    },
+    {
+      "path": "/about/",
+      "template": "about.pug",
+      "file": "about.json"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+html(lang="en")
+  head
+    title= site.title
+  body
+    h1= page.title
+    h2= page.slogan
+    br
+    each item in page.deps
+      h2
+        a(href=item.path)= item.data.title
