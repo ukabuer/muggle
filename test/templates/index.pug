@@ -3,9 +3,11 @@ html(lang="en")
   head
     title= site.title
   body
-    h1= page.title
-    h2= page.slogan
-    br
-    each item in page.deps
-      h2
+    h1= data.title
+    h2= data.slogan
+    h3
+      a(href='/about/') About
+    hr
+    each item in data.deps
+      h3
         a(href=item.path)= item.data.title
