@@ -1,36 +1,54 @@
 An unambitious static site generator, no magic inside.
 
-Define your routes and data, then connect the two with your templates.
 
-no implit rules,
+Routes and data are defined by yourself, then connected by the templates, no implicit rules.
 
-`site.json`, define the global site data, accessing with variable `site`
+
+`site.json`, define the global data, can be accessed in all templates using variable `site`.
+And for each site page, there will be a `page` variable contains data you defined.
 ``` json
 {
+  // can be accessed using `site.title` in all templates
   "title": "this is the site title",
+  // can be accessed using `site.oh` in all templates
+  "oh": "~~~~~~~",
+  // required, define all pages' path, template and data
   "routes": [
     {
+      // url path, can be accesed using `page.path` in my_template.pug
       "path": "/",
-      "data": "contents/my_data.json",
-      "template": "templates/my_template.pug",
+      "template": "templates_dir/my_template.pug",
+      // data in this file will be merged in to `page`
+      "data": "contents_dir/my_data.json",
+      // can be accessed using `page.deps`
       "deps": [
         {
-          "path": "/:filename/",
-          "dir": "contents/blog",
-          "template": "templates/"
+          // `:filename` with be replace with file name
+          "path": "/blog/:filename/",
+          // each markdown, json and yaml file in this directory will render a page
+          "dir": "contents_dir/blog",
+          "template": "templates_dir/article.pug"
         }
       ]
     },
     {
       "path": "/about/",
       "data": "contents/about.json",
-      "template": "templates/my_template.pug",
+      "template": "templates/about.pug",
     }
   ]
 }
 ```
 
-`my_data.json`, can be accessing with variable `data`
+`contents/my_data.json`, 
+``` json
+{
+  "title": "",
+  "slogan": "An unambitious static site generator, no magic inside"
+}
+```
+
+`contents/blog/article1.md`, markdown files are also data files, `html` can be accessed with `data.content`
 ```
 {
   "title": "",
