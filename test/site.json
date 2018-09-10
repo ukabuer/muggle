@@ -1,6 +1,6 @@
 {
   "title": "TEST SITE",
-  "routes": [
+  "pages": [
     {
       "path": "/",
       "template": "index.pug",

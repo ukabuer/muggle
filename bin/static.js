@@ -7,11 +7,11 @@ const createServer = require('../lib/serve');
 const parse = require('../lib/parse');
 const generate = require('../lib/generate');
 
-function getRoutes(config) {
+function getPages(config) {
   return readFile(config.site, 'utf8')
     .then(async (json) => {
       const data = JSON.parse(json);
-      const tasks = data.routes.map(route => parse(route, config));
+      const tasks = data.pages.map(pagte => parse(pagte, config));
       const results = await Promise.all(tasks);
       return results.reduce((all, cur) => all.concat(cur), []);
     });
@@ -42,7 +42,7 @@ program
       public: publicDir,
     };
     ensureDir(publicDir)
-      .then(() => getRoutes(config))
+      .then(() => getPages(config))
       .then((routes) => {
         debug(routes);
         createServer(routes, config);
@@ -60,7 +60,7 @@ program
       content,
       template,
     };
-    getRoutes(config)
+    getPages(config)
       .then((routes) => {
         const tasks = routes.map(route => generate(route, config));
         return Promise.all(tasks);
