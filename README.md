@@ -2,35 +2,43 @@ An unambitious static site generator, no magic inside.
 
 Routes and data are defined by yourself, and connected by the template with only a few implicit rules.
 
+__WARNING: this project is still under development.__
+
 ## Features
 - A declarative way to customize the site pages
-- Lightweight and easy to use
+- Lightweight and easy to learn
 - auto generating based on the files in directory
 - Using `pug` as the templating engine
 - Armed with a live reload dev server
 
 ## Install
-Make sure you have `nodejs` >= 8.6.0 and `npm` installed beforehand
+Make sure you have `nodejs` >= 7.6.0 and `npm` installed beforehand
 ``` shell
-npm install -g static
+npm install -g muggle
 # or locally in a node project
-npm install static
+npm install muggle
 ```
 
-## Usage
+## Command line usage
+Check out available commands and options with
+```
+muggle --help
+muggle [command] --help
+```
+
 Create a new site:
 ```
-static new
+muggle new [name]
 ```
 
 Start the dev server:
 ```
-static serve
+muggle serve
 ```
 
 Generate HTML files:
 ```
-static gen
+muggle gen
 ```
 
 ## Customize
@@ -53,9 +61,9 @@ An example for `site.json`:
       // the home page
       // url path, can be accessed using `page.path` in my_template.pug
       "path": "/",
-      "template": "templates_dir/my_template.pug",
+      "template": "my_template.pug",
       // data in this file will be merged in to `page`, can also be a markdown or yaml file
-      "data": "contents_dir/my_data.json",
+      "data": "my_data.json",
       // can be accessed using `page.deps`
       "deps": [
         {
@@ -64,16 +72,16 @@ An example for `site.json`:
           // can be accessed using `page.path when rendering '/blog/:filename'
           "path": "/blog/:filename/",
           // each markdown, json and yaml file in this directory will render a page
-          "dir": "contents_dir/blog",
-          "template": "templates_dir/article.pug"
+          "dir": "blog",
+          "template": "article.pug"
         }
       ]
     },
     {
       // the about page
       "path": "/about/",
-      "data": "contents/about.json",
-      "template": "templates/about.pug"
+      "data": "about.json",
+      "template": "about.pug"
     }
   ]
 }

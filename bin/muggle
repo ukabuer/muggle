@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 
-const debug = require('debug')('static:entry');
+const debug = require('debug')('muggle:entry');
 const program = require('commander');
-const { readFile, ensureDir } = require('fs-extra');
+const path = require('path');
+const { readFile, ensureDir, copySync } = require('fs-extra');
 const createServer = require('../lib/serve');
 const parse = require('../lib/parse');
 const generate = require('../lib/generate');
@@ -18,14 +19,23 @@ function getPages(config) {
 }
 
 program.version('0.1.0')
-  .option('-s, --site <path>', 'Set site data file path, defaults to ./contents/site.json', './site.json')
-  .option('-c, --content <path>', 'Set the contents directory, defaults to ./contents', './contents/')
-  .option('-t, --template <path>', 'Set the templates directory', './templates/')
-  .option('-p, --public <path>', 'Set the public directory', './public');
+  .option('-s, --site <path>', 'set site data file path', './site.json')
+  .option('-c, --content <path>', 'set the contents directory', './contents/')
+  .option('-t, --template <path>', 'set the templates directory', './templates/')
+  .option('-p, --public <path>', 'set the public directory', './public/');
+
+program
+  .command('new [name]')
+  .description('create a directory for your new site')
+  .action((name) => {
+    const src = path.resolve(__dirname, '../example');
+    copySync(src, name);
+    console.log('New site created!');
+  });
 
 program
   .command('serve')
-  .description('run a dev server at sepecific port, defaults to :8080')
+  .description('run a dev server, port defaults to :8080')
   .option('-p, --port <port>', 'Set the server port', 8080)
   .action((options) => {
     const {
@@ -72,3 +82,7 @@ program
   });
 
 program.parse(process.argv);
+
+if (!process.argv.slice(2).length) {
+  program.outputHelp();
+}

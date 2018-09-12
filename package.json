@@ -1,14 +1,26 @@
 {
-  "name": "static",
+  "name": "muggle",
   "version": "0.1.0",
-  "description": "",
-  "main": "index.js",
+  "description": "An unambitious static site generator, no magic inside.",
+  "bin": {
+    "muggle": "bin/muggle"
+  },
+  "main": "lib/serve.js",
+  "engines": {
+    "node": ">= 7.6.0"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "debug": "DEBUG=static:* node ./bin/static.js serve"
+    "debug": "DEBUG=muggle:* node ./bin/static.js serve"
   },
-  "keywords": [],
-  "author": "ukabuer",
+  "keywords": [
+    "website",
+    "blog",
+    "cms",
+    "static site generator"
+  ],
+  "repository": "ukabuer/muggle",
+  "author": "ukabuer <ukabuer@live.com> (https://ukabuer.me)",
   "license": "ISC",
   "dependencies": {
     "commander": "^2.17.1",
