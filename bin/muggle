@@ -1,22 +1,11 @@
 #!/usr/bin/env node
 
-const debug = require('debug')('muggle:entry');
 const program = require('commander');
 const path = require('path');
 const { readFile, ensureDir, copySync } = require('fs-extra');
 const createServer = require('../lib/serve');
 const parse = require('../lib/parse');
 const generate = require('../lib/generate');
-
-function getPages(config) {
-  return readFile(config.site, 'utf8')
-    .then(async (json) => {
-      const data = JSON.parse(json);
-      const tasks = data.pages.map(pagte => parse(pagte, config));
-      const results = await Promise.all(tasks);
-      return results.reduce((all, cur) => all.concat(cur), []);
-    });
-}
 
 program.version('0.1.0')
   .option('-s, --site <path>', 'set site data file path', './site.json')
@@ -52,10 +41,8 @@ program
       public: publicDir,
     };
     ensureDir(publicDir)
-      .then(() => getPages(config))
-      .then((routes) => {
-        debug(routes);
-        createServer(routes, config);
+      .then(() => {
+        createServer(config);
       });
   });
 
@@ -70,7 +57,13 @@ program
       content,
       template,
     };
-    getPages(config)
+    readFile(config.site, 'utf8')
+      .then(async (json) => {
+        const data = JSON.parse(json);
+        const tasks = data.pages.map(pagte => parse(pagte, config));
+        const results = await Promise.all(tasks);
+        return results.reduce((all, cur) => all.concat(cur), []);
+      })
       .then((routes) => {
         const tasks = routes.map(route => generate(route, config));
         return Promise.all(tasks);
