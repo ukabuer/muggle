@@ -6,6 +6,7 @@ const { readFile, ensureDir, copySync } = require('fs-extra');
 const createServer = require('../lib/serve');
 const parse = require('../lib/parse');
 const generate = require('../lib/generate');
+const { withTailSlash: WTS } = require('../lib/utils');
 
 program.version('0.1.0')
   .option('-s, --site <path>', 'set site data file path', './site.json')
@@ -36,9 +37,9 @@ program
     const config = {
       port: options.port,
       site,
-      content,
-      template,
-      public: publicDir,
+      content: WTS(content),
+      template: WTS(template),
+      public: WTS(publicDir),
     };
     ensureDir(publicDir)
       .then(() => {
@@ -50,12 +51,17 @@ program
   .command('gen')
   .description('generate HTML files in the public directory')
   .action((options) => {
-    const { site, content, template } = options.parent;
-    const config = {
-      public: options.parent.public,
+    const {
       site,
       content,
       template,
+      public: publicDir,
+    } = options.parent;
+    const config = {
+      public: WTS(publicDir),
+      site,
+      content: WTS(content),
+      template: WTS(template),
     };
     readFile(config.site, 'utf8')
       .then(async (json) => {
