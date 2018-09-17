@@ -49,7 +49,7 @@ These global data can be accessed in all templates using the variable `site`.
 And for each site page, if you define a data file for it in `site.json`, there will be a `page` variable contains the data.
 
 An example for `site.json`:
-``` json
+``` js
 {
   // can be accessed using `site.title` in all templates
   "title": "this is the site title",
@@ -89,5 +89,4 @@ An example for `site.json`:
 
 ## Roadmap
 - [ ] pagination
-- [ ] dev middleware
 - [ ] routes syntax validation
