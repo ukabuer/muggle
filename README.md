@@ -88,5 +88,6 @@ An example for `site.json`:
 ```
 
 ## Roadmap
-- [ ] pagination
+- [x] pagination
 - [ ] routes syntax validation
+- [ ] RSS
