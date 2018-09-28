@@ -90,4 +90,4 @@ An example for `site.json`:
 ## Roadmap
 - [x] pagination
 - [ ] routes syntax validation
-- [ ] RSS
+- [x] RSS

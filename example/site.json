@@ -1,14 +1,19 @@
 {
   "title": "TEST SITE",
+  "link": "http://mysite.com",
   "pages": [
     {
       "path": "/",
       "template": "index.pug",
       "file": "index.json",
       "pagination": 1,
+      "rss": {
+        "filename": "index.rss",
+        "template": "rss.pug"
+      },
       "deps": [
         {
-          "path": "/:filename",
+          "path": "/:filename/",
           "dir": "blog",
           "template": "item.pug"
         }

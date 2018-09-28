@@ -1,0 +1,10 @@
+doctype xml
+rss( version="2.0", xmlns:content="http://purl.org/rss/1.0/modules/content/", xmlns:atom='http://www.w3.org/2005/Atom' )
+  channel
+    title= site.title
+    link= site.link
+    each feed, i in page.deps
+      item
+        title= feed.title
+        a(href=feed.href)
+        updated= feed.date.toUTCString()
