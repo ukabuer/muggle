@@ -3,7 +3,7 @@ rss( version="2.0", xmlns:content="http://purl.org/rss/1.0/modules/content/", xm
   channel
     title= site.title
     link= site.link
-    each feed, i in page.deps
+    each feed in page.deps[0].deps
       item
         title= feed.title
         a(href=feed.href)

@@ -6,16 +6,22 @@
       "path": "/",
       "template": "index.pug",
       "file": "index.json",
-      "pagination": 1,
       "rss": {
         "filename": "index.rss",
         "template": "rss.pug"
       },
       "deps": [
         {
-          "path": "/:filename/",
-          "dir": "blog",
-          "template": "item.pug"
+          "path": "/blog/",
+          "template": "blog/list.pug",
+          "pagination": 2,
+          "deps": [
+            {
+              "path": "/:filename/",
+              "dir": "blog",
+              "template": "blog/item.pug"
+            }
+          ]
         }
       ]
     },

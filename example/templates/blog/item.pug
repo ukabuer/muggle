@@ -15,6 +15,6 @@ html(lang="en")
           a(href="/index.rss") RSS
     br
     h1= page.title
-    h2= page.slogan
+    h2= page.date.toLocaleString()
     hr
-    p We have #{page.deps[0].deps.length} articles
+    p!= page.content

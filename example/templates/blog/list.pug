@@ -14,7 +14,8 @@ html(lang="en")
         li
           a(href="/index.rss") RSS
     br
-    h1= page.title
-    h2= page.slogan
+    h1 Articles
     hr
-    p We have #{page.deps[0].deps.length} articles
+    each item in page.deps
+      h3
+        a(href=item.path)= item.title
