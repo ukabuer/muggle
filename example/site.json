@@ -6,10 +6,6 @@
       "path": "/",
       "template": "index.pug",
       "file": "index.json",
-      "rss": {
-        "filename": "index.rss",
-        "template": "rss.pug"
-      },
       "deps": [
         {
           "path": "/blog/",
@@ -23,7 +19,11 @@
             }
           ]
         }
-      ]
+      ],
+      "rss": {
+        "filename": "index.rss",
+        "template": "rss.pug"
+      }
     },
     {
       "path": "/about/",
