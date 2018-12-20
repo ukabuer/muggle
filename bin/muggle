@@ -66,10 +66,8 @@ program
     const data = JSON.parse(json);
 
     const pages = await parse(data.pages, config);
-    let tasks = Object.keys(pages).map(p => pages[p].getData());
-    await Promise.all(tasks);
 
-    tasks = Object.keys(pages).map(p => generate(pages[p], pages, config));
+    const tasks = Object.keys(pages).map(p => generate(pages[p], pages, config));
     await Promise.all(tasks);
 
     console.log('Generated!');
