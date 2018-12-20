@@ -19,3 +19,7 @@ html(lang="en")
     each item in page.deps
       h3
         a(href=item.path)= item.title
+    - let pagi = 1;
+    while pagi <= page.pagination.total
+      a(href=`/blog/page/${pagi}`)= pagi++
+      span &nbsp;&nbsp;&nbsp;

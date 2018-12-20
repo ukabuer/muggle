@@ -6,7 +6,7 @@ const { readFile, ensureDir, copySync } = require('fs-extra');
 const createServer = require('../lib/serve');
 const parse = require('../lib/parse');
 const generate = require('../lib/generate');
-const { withTailSlash: WTS } = require('../lib/utils');
+const { addTailSlash: ATS } = require('../lib/utils');
 
 program.version('0.1.0')
   .option('-s, --site <path>', 'set site data file path', './site.json')
@@ -27,7 +27,7 @@ program
   .command('serve')
   .description('run a dev server, port defaults to :8080')
   .option('-p, --port <port>', 'Set the server port', 8080)
-  .action((options) => {
+  .action(async (options) => {
     const {
       site,
       content,
@@ -37,20 +37,17 @@ program
     const config = {
       port: options.port,
       site,
-      content: WTS(content),
-      template: WTS(template),
-      public: WTS(publicDir),
+      content: ATS(content),
+      template: ATS(template),
+      public: ATS(publicDir),
     };
-    ensureDir(publicDir)
-      .then(() => {
-        createServer(config);
-      });
+    createServer(config);
   });
 
 program
   .command('gen')
   .description('generate HTML files in the public directory')
-  .action((options) => {
+  .action(async (options) => {
     const {
       site,
       content,
@@ -58,26 +55,25 @@ program
       public: publicDir,
     } = options.parent;
     const config = {
-      public: WTS(publicDir),
       site,
-      content: WTS(content),
-      template: WTS(template),
+      public: ATS(publicDir),
+      content: ATS(content),
+      template: ATS(template),
     };
-    readFile(config.site, 'utf8')
-      .then(async (json) => {
-        const data = JSON.parse(json);
-        const tasks = data.pages.map(pagte => parse(pagte, config));
-        const results = await Promise.all(tasks);
-        return results.reduce((all, cur) => all.concat(cur), []);
-      })
-      .then((routes) => {
-        const tasks = routes.map(route => generate(route, config));
-        return Promise.all(tasks);
-      })
-      .then(() => {
-        console.log('Generated!');
-        process.exit();
-      });
+    await ensureDir(publicDir);
+
+    const json = await readFile(config.site, 'utf8');
+    const data = JSON.parse(json);
+
+    const pages = await parse(data.pages, config);
+    let tasks = Object.keys(pages).map(p => pages[p].getData());
+    await Promise.all(tasks);
+
+    tasks = Object.keys(pages).map(p => generate(pages[p], pages, config));
+    await Promise.all(tasks);
+
+    console.log('Generated!');
+    process.exit();
   });
 
 program.parse(process.argv);

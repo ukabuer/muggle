@@ -6,24 +6,25 @@
       "path": "/",
       "template": "index.pug",
       "file": "index.json",
-      "deps": [
-        {
-          "path": "/blog/",
-          "template": "blog/list.pug",
-          "pagination": 2,
-          "deps": [
-            {
-              "path": "/:filename/",
-              "dir": "blog",
-              "template": "blog/item.pug"
-            }
-          ]
-        }
-      ],
-      "rss": {
-        "filename": "index.rss",
-        "template": "rss.pug"
-      }
+      "deps": ["/blog/:filename/"]
+    },
+    {
+      "path": "/index.rss",
+      "template": "rss.pug",
+      "deps": ["/blog/:filename/"]
+    },
+    {
+      "path": "/blog/",
+      "template": "blog/list.pug",
+      "deps": [{
+        "path": "/blog/:filename/",
+        "pagination": 2
+      }]
+    },
+    {
+      "path": "/blog/:filename/",
+      "template": "blog/item.pug",
+      "dir": "blog"
     },
     {
       "path": "/about/",

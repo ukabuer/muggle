@@ -3,9 +3,9 @@ rss(version="2.0" encoding="UTF-8" xmlns:dc="http://purl.org/dc/elements/1.1/" x
   channel
     title= site.title
     link= site.link
-    each feed in page.deps[0].deps
+    each feed in page.deps
       item
         guid= `${site.link}${feed.path}`
         title= feed.title
         a(href=`${site.link}${feed.path}`)
-        updated= feed.date.toUTCString()
+        updated= feed.date.toLocaleString()
