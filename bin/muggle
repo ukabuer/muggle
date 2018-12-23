@@ -5,6 +5,7 @@ const path = require('path');
 const { readFile, ensureDir, copySync } = require('fs-extra');
 const createServer = require('../lib/serve');
 const parse = require('../lib/parse');
+const validate = require('../lib/validate');
 const generate = require('../lib/generate');
 const { addTailSlash: ATS } = require('../lib/utils');
 
@@ -64,6 +65,13 @@ program
 
     const json = await readFile(config.site, 'utf8');
     const data = JSON.parse(json);
+    const valid = validate(data);
+    if (!valid) {
+      const messages = validate.errors.map(error => `  ${error.dataPath}: ${error.message}`).join('\n');
+      console.error('Config syntax error:');
+      console.error(messages);
+      process.exit();
+    }
 
     const pages = await parse(data.pages, config);
 
