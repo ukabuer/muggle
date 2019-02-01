@@ -1,27 +1,33 @@
 #!/usr/bin/env node
 
+const { resolve } = require('path');
+const { ensureDir, copySync } = require('fs-extra');
 const program = require('commander');
-const path = require('path');
-const { readFile, ensureDir, copySync } = require('fs-extra');
-const createServer = require('../lib/serve');
-const parse = require('../lib/parse');
+const chokidar = require('chokidar');
 const validate = require('../lib/validate');
-const generate = require('../lib/generate');
-const { addTailSlash: ATS } = require('../lib/utils');
+const Manager = require('../lib/manager');
+const packageInfo = require('../package.json');
 
-program.version('0.1.0')
-  .option('-s, --site <path>', 'set site data file path', './site.json')
-  .option('-c, --content <path>', 'set the contents directory', './contents/')
-  .option('-t, --template <path>', 'set the templates directory', './templates/')
-  .option('-p, --public <path>', 'set the public directory', './public/');
+const { log, error } = console;
+
+function getConfig(filepath) {
+  const resolved = require.resolve(filepath);
+  if (require.cache[resolved]) {
+    delete require.cache[resolved];
+  }
+  return require(filepath); // eslint-disable-line
+}
+
+program.version(packageInfo.version)
+  .option('-c, --config <path>', 'set config file path', 'muggle.config.js');
 
 program
   .command('new [name]')
   .description('create a directory for your new site')
   .action((name) => {
-    const src = path.resolve(__dirname, '../example');
+    const src = resolve(__dirname, '../example');
     copySync(src, name);
-    console.log('New site created!');
+    log('New site created!');
   });
 
 program
@@ -29,56 +35,51 @@ program
   .description('run a dev server, port defaults to :8080')
   .option('-p, --port <port>', 'Set the server port', 8080)
   .action(async (options) => {
-    const {
-      site,
-      content,
-      template,
-      public: publicDir,
-    } = options.parent;
-    const config = {
-      port: options.port,
-      site,
-      content: ATS(content),
-      template: ATS(template),
-      public: ATS(publicDir),
-    };
-    createServer(config);
-  });
-
-program
-  .command('gen')
-  .description('generate HTML files in the public directory')
-  .action(async (options) => {
-    const {
-      site,
-      content,
-      template,
-      public: publicDir,
-    } = options.parent;
-    const config = {
-      site,
-      public: ATS(publicDir),
-      content: ATS(content),
-      template: ATS(template),
-    };
-    await ensureDir(publicDir);
-
-    const json = await readFile(config.site, 'utf8');
-    const data = JSON.parse(json);
-    const valid = validate(data);
-    if (!valid) {
-      const messages = validate.errors.map(error => `  ${error.dataPath}: ${error.message}`).join('\n');
-      console.error('Config syntax error:');
-      console.error(messages);
+    const configFile = resolve(process.cwd(), options.parent.config);
+    const config = getConfig(configFile);
+    const errors = validate(config);
+    if (errors.length > 0) {
+      const messages = errors.map(err => `  ${err.message}`).join('\n');
+      error(`${configFile} syntax error:`);
+      error(messages);
       process.exit();
     }
 
-    const pages = await parse(data.pages, config);
+    const manager = new Manager(config);
+    await manager.serve(options.port);
 
-    const tasks = Object.keys(pages).map(p => generate(pages[p], pages, config));
-    await Promise.all(tasks);
+    const watcher = chokidar.watch(configFile);
+    watcher.on('change', () => {
+      setTimeout(() => {
+        const newConfig = getConfig(configFile);
+        manager.changeConfig(newConfig);
+      }, 100);
+    });
+  });
 
-    console.log('Generated!');
+program
+  .command('build')
+  .description('generate HTML files in the public directory')
+  .action(async (options) => {
+    process.env.NODE_ENV = 'production';
+
+    const configFile = resolve(process.cwd(), options.parent.config);
+    const config = getConfig(configFile);
+    await ensureDir(config.public);
+
+    const errors = validate(config);
+    if (errors.length > 0) {
+      const messages = errors.map(err => `  ${err.message}`).join('\n');
+      error(`${configFile} syntax error:`);
+      error(messages);
+      process.exit();
+    }
+
+    const manager = new Manager(config);
+    await manager.process();
+    await manager.write();
+
+    log('Generated!');
     process.exit();
   });
 

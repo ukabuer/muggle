@@ -1,6 +1,7 @@
 ---
 title: First Article
 date: 2018-09-05
+template: blog/item.pug
 ---
 
 this is first article.

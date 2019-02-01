@@ -1,13 +1,13 @@
 An unambitious static site generator, no magic inside.
 
-Routes and data are defined by yourself, and connected by the template with only a few implicit rules.
+Each page's data and template are defined by yourself, and the route is derived by its file path.
 
 __WARNING: this project is still under development.__
 
 ## Features
-- A declarative way to customize the site pages
 - Lightweight and easy to learn
-- auto generating based on the files in directory
+- An intuitive way to customize pages by leveraging the power of `markdown`
+- Auto generating based on `.md` files in the directory
 - Using `pug` as the templating engine
 - Armed with a live reload dev server
 
@@ -28,7 +28,7 @@ muggle [command] --help
 
 Create a new site:
 ```
-muggle new [name]
+muggle new <name>
 ```
 
 Start the dev server:
@@ -38,56 +38,51 @@ muggle serve
 
 Generate HTML files:
 ```
-muggle gen
+muggle build
 ```
 
 ## Customize
-First of all, you need to have a `site.json` which defines the global data including some info about site pages.
+First of all, you need to have a `muggle.config.js` which defines the `pages`, `templates` and `public` variable.
 
-These global data can be accessed in all templates using the variable `site`.
+`pages` indicates the directory where your `.md` files located, `templates` should be the directory contains your template files and `public` is the target directory when genrating HTML files.
 
-And for each site page, if you define a data file for it in `site.json`, there will be a `page` variable contains the data.
+Each `.md` file will generate a `.html` file，using the template and data defined in its `FrontMatter`, for example, we have a `about/index.md`:
+```md
+---
+title: About
+somedata: 1234
+anotherdata: lalala
+template: about.pug
+---
 
-An example for `site.json`:
+Hello here!!
+```
+
+it will be rendered as `about/index.html` using the template `about.pug`, the other data in front matter will be wrapped in the `page` variable for using in the template, the markdown's content will be rendered into HTML and can be accessed using `page.content`.
+
+If you want to define same global data, using a `site` variable in the `muggle.config.js` so it can be accessed in all templates using the name `site`.
+
+An example for `muggle.config.js`:
 ``` js
-{
-  // can be accessed using `site.title` in all templates
-  "title": "this is the site title",
-  // can be accessed using `site.oh` in all templates
-  "oh": "~~~~~~~",
-  // required, define all pages' path, template and data
-  "pages": [
-    {
-      // the home page
-      // url path, can be accessed using `page.path` in my_template.pug
-      "path": "/",
-      "template": "my_template.pug",
-      // data in this file will be merged in to `page`, can also be a markdown or yaml file
-      "data": "my_data.json",
-      // can be accessed using `page.deps`
-      "deps": [
-        {
-          // `:filename` will be replaced with file name
-          // can be accessed using `page.deps[i].path` when rendering '/'
-          // can be accessed using `page.path when rendering '/blog/:filename'
-          "path": "/blog/:filename/",
-          // each markdown, json and yaml file in this directory will render a page
-          "dir": "blog",
-          "template": "article.pug"
-        }
-      ]
-    },
-    {
-      // the about page
-      "path": "/about/",
-      "data": "about.json",
-      "template": "about.pug"
-    }
-  ]
-}
+module.exports = {
+  pages: './pages',
+  templates: './templates',
+  public: './public',
+  site: {
+    title: 'Muggle Example Site', // can be accessed using `site.title` in all templates
+    link: 'https://ukabuer.me',
+    navs: [
+      { path: '/', name: 'Home' },
+      { path: '/blog/', name: 'Blogs' },
+      { path: '/about/', name: 'About' },
+      { path: '/rss.xml', name: 'RSS' },
+    ],
+  },
+};
 ```
 
 ## Roadmap
-- [x] pagination
-- [ ] routes syntax validation
 - [x] RSS
+- [ ] Pagination
+- [ ] Integrate scripts and styles building pipeline
+- [ ] Directive system

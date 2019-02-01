@@ -3,16 +3,7 @@ html(lang="en")
   head
     title #{page.title} | #{site.title}
   body
-    nav
-      ul
-        li
-          a(href="/") Home
-        li
-          a(href="/blog/") Blog
-        li
-          a(href="/about/") About
-        li
-          a(href="/index.rss") RSS
+    include common/nav.pug
     br
     h1
       a(href=page.author.link)= page.author.name

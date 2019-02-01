@@ -1,6 +1,7 @@
 ---
 title: Third Article
 date: 2018-09-30
+template: blog/item.pug
 draft: true
 ---
 

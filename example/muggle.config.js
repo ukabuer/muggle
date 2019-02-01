@@ -15,6 +15,19 @@ const getAndRemoveConfig = (str) => {
 const isAbsolutePath = p => /(:|(\/{2}))/g.test(p);
 
 module.exports = {
+  pages: './pages',
+  templates: './templates',
+  public: './public',
+  site: {
+    title: 'Muggle Example Site',
+    link: 'https://ukabuer.me',
+    navs: [
+      { path: '/', name: 'Home' },
+      { path: '/blog/', name: 'Blogs' },
+      { path: '/about/', name: 'About' },
+      { path: '/rss.xml', name: 'RSS' },
+    ],
+  },
   markdown: {
     link: (href, str = '', text) => {
       let attrs = '';
