@@ -1,6 +1,6 @@
 {
   "name": "muggle",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "An unambitious static site generator, no magic inside.",
   "bin": {
     "muggle": "bin/muggle"
