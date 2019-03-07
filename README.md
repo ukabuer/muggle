@@ -50,15 +50,24 @@ Each `.md` file will generate a `.html` file，using the template and data defin
 ```md
 ---
 title: About
-somedata: 1234
-anotherdata: lalala
+mydata: 1234
 template: about.pug
 ---
 
 Hello here!!
 ```
 
-it will be rendered as `about/index.html` using the template `about.pug`, the other data in front matter will be wrapped in the `page` variable for using in the template, the markdown's content will be rendered into HTML and can be accessed using `page.content`.
+which becomes the data of page as
+``` json
+{
+  "title": "About",
+  "mydata": 1234,
+  "template": "about.pug",
+  "content": "<p>Hello here!!</p>"
+}
+```
+
+this page will be rendered to `about/index.html` using the template `about.pug` in the theme's `template` folder, the other data in front matter will be wrapped in the `page` variable for using in the template, the markdown's content will be rendered into HTML and can be accessed using `page.content`.
 
 If you want to define same global data, using a `site` variable in the `muggle.config.js` so it can be accessed in all templates using the name `site`.
 
@@ -66,7 +75,7 @@ An example for `muggle.config.js`:
 ``` js
 module.exports = {
   pages: './pages',
-  templates: './templates',
+  theme: './themes/my-theme', // will use templates under the theme's `templates` folder
   public: './public',
   site: {
     title: 'Muggle Example Site', // can be accessed using `site.title` in all templates
