@@ -76,7 +76,6 @@ program
     }
 
     const manager = new Manager(config);
-    await manager.process();
     await manager.write();
 
     log('Generated!');
