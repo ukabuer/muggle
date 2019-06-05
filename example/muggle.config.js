@@ -16,7 +16,7 @@ const isAbsolutePath = p => /(:|(\/{2}))/g.test(p);
 
 module.exports = {
   pages: './pages',
-  theme: './',
+  theme: './themes/example-theme',
   public: './public',
   site: {
     title: 'Muggle Example Site',
