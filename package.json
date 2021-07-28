@@ -1,36 +1,41 @@
 {
-  "name": "muggle",
-  "version": "0.7.1",
-  "description": "An unambitious static site generator, no magic inside.",
-  "bin": {
-    "muggle": "bin/muggle"
-  },
-  "main": "lib/serve.js",
-  "engines": {
-    "node": ">= 7.6.0"
-  },
+  "name": "ukabuer.me",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/server.js",
+  "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "debug": "DEBUG=muggle:* node ./bin/static.js serve"
+    "build:server": "tsc -p src/tsconfig.server.json",
+    "watch:server": "tsc -w -p src/tsconfig.server.json",
+    "dev": "node src/serve",
+    "prerender": "node src/prerender",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [
-    "website",
-    "blog",
-    "cms",
-    "static site generator"
-  ],
-  "repository": "ukabuer/muggle",
-  "author": "ukabuer <ukabuer@live.com> (https://ukabuer.me)",
+  "keywords": [],
+  "author": "",
   "license": "ISC",
   "dependencies": {
-    "cheerio": "^1.0.0-rc.2",
-    "chokidar": "^3.0.2",
-    "commander": "^2.19.0",
-    "express": "^4.16.4",
-    "fs-extra": "^7.0.1",
-    "js-yaml": "^3.13.1",
-    "marked": "^0.7.0",
-    "pug": "^3.0.1",
-    "tiny-lr": "^1.1.1"
+    "@types/fs-extra": "^9.0.12",
+    "cac": "^6.7.3",
+    "fast-glob": "^3.2.5",
+    "fs-extra": "^10.0.0",
+    "isomorphic-unfetch": "^3.1.0",
+    "polka": "^1.0.0-next.15",
+    "preact": "^10.5.13",
+    "preact-render-to-string": "^5.1.19",
+    "sass": "^1.32.12",
+    "sirv": "^1.0.12",
+    "typescript": "^4.2.4",
+    "vite": "^2.4.1",
+    "wouter-preact": "^2.7.4"
+  },
+  "devDependencies": {
+    "@prefresh/vite": "^2.2.2",
+    "@types/node": "^15.0.1",
+    "@typescript-eslint/eslint-plugin": "^4.22.0",
+    "@typescript-eslint/parser": "^4.22.0",
+    "eslint": "^7.25.0",
+    "eslint-plugin-react": "^7.23.2",
+    "eslint-plugin-react-hooks": "^4.2.0"
   }
 }

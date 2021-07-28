@@ -1,3 +1,6 @@
-.vscode
 node_modules
-example/public
+dist
+.vscode
+src/*.js
+*.map
+exports
