@@ -1,12 +1,13 @@
 {
-  "name": "ukabuer.me",
+  "name": "muggle",
   "version": "1.0.0",
   "description": "",
-  "main": "src/server.js",
-  "private": true,
+  "main": "dist/index.js",
   "scripts": {
-    "build:server": "tsc -p src/tsconfig.server.json",
-    "watch:server": "tsc -w -p src/tsconfig.server.json",
+    "build:server": "tsc -p tsconfig.json",
+    "build:client": "tsc -p client/tsconfig.client.json",
+    "watch:server": "tsc -w -p tsconfig.json",
+    "watch:client": "tsc -w -p client/tsconfig.client.json",
     "dev": "node src/serve",
     "prerender": "node src/prerender",
     "test": "echo \"Error: no test specified\" && exit 1"

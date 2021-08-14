@@ -1,4 +1,4 @@
-import fs from "fs";
+import fs from "fs-extra";
 import sirv from "sirv";
 import polka from "polka";
 import glob from "fast-glob";
@@ -6,23 +6,19 @@ import { resolve } from "path";
 import prefresh from "@prefresh/vite";
 import { createServer as createViteServer } from "vite";
 import watchAPI from "./api-watcher";
+import fetch from "isomorphic-unfetch";
 
 async function createServer(prerender = false) {
   const app = polka();
 
   // static files
-  app.use(sirv("./site/public"));
-
+  app.use(sirv("public"));
   // site api
-  const files = await glob("./site/routes/**/api.ts");
+  const files = await glob("api/*.ts");
   watchAPI(files);
   for (const path of files) {
     let route =
-      "/api" +
-      path
-        .replace("./site/routes", "")
-        .replace("api.ts", "index.json")
-        .replace(/\\/g, "/");
+      "/" + path.replace("index.ts", "index.json").replace(/\\/g, "/");
     const matches = route.match(/\[(\w+)\]/g);
     if (matches && matches.length > 0) {
       for (const match of matches) {
@@ -31,7 +27,7 @@ async function createServer(prerender = false) {
       }
     }
 
-    const script = resolve("./site/dist/.tmp", path.replace(".ts", ".js"));
+    const script = resolve("dist/.tmp", path.replace(".ts", ".js"));
     app.get(route, async (req, res) => {
       const originEnd = res.end.bind(res);
       let saved = "";
@@ -46,7 +42,7 @@ async function createServer(prerender = false) {
 
       if (prerender) {
         const url = req.originalUrl;
-        const file = `site/dist${url}`;
+        const file = `dist${url}`;
         const dir = file.replace("index.json", "");
         const exists = fs.existsSync(dir);
         if (!exists) {
@@ -60,7 +56,7 @@ async function createServer(prerender = false) {
 
   const vite = await createViteServer({
     configFile: false,
-    root: resolve(__dirname, "../site"),
+    root: process.cwd(),
     plugins: prerender ? [] : [prefresh()],
     esbuild: {
       jsxFactory: "h",
@@ -78,28 +74,27 @@ async function createServer(prerender = false) {
         strict: true,
       },
     },
-  });
+    ssr: {
+      external: ["isomorphic-unfetch"],
+    },
+  } as any);
   app.use(vite.middlewares);
 
   app.get("/*", async (req, res) => {
     const url = req.originalUrl;
     try {
       let template = prerender
-        ? fs.readFileSync("./site/dist/server/template.html", "utf-8")
-        : fs.readFileSync("site/index.html", "utf-8");
-      template = template.replace(
-        "<!-- @APP@ -->",
-        `<!-- @APP@ --><script type="module" src="/dist/.tmp/entry-client.tsx"></script>`
-      );
+        ? fs.readFileSync("dist/server/template.html", "utf-8")
+        : fs.readFileSync(resolve(__dirname, "../template.html"), "utf-8");
       if (!prerender) {
         template = await vite.transformIndexHtml(url, template);
       }
-
       const { renderToHtml } = prerender
-        ? require(resolve(process.cwd(), "./site/dist/server/entry-server.js"))
-        : await vite.ssrLoadModule("./site/dist/.tmp/entry-server.tsx");
-
-      const [data, head, app] = await renderToHtml(url);
+        ? require(resolve(process.cwd(), "dist/server/entry-server.js"))
+        : await vite.ssrLoadModule(
+            "./node_modules/muggle/client/entry-server.js"
+          );
+      const [data, head, app] = await renderToHtml(url, fetch);
 
       let html = template.replace(
         "<!-- @HEAD@ -->",
@@ -114,7 +109,7 @@ async function createServer(prerender = false) {
       res.end(html);
 
       if (prerender) {
-        const dir = `site/dist${url}`;
+        const dir = `dist${url}`;
         const exists = fs.existsSync(dir);
         if (!exists) {
           fs.mkdirSync(dir);

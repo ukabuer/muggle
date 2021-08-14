@@ -11,7 +11,7 @@ export function createAsyncPage<Props>(
   let route = file
     .replace(".tsx", "")
     .replace(/\/index$/, "/")
-    .replace("../../../site/routes", "");
+    .replace("../../../pages", "");
   const matches = route.match(/\[(\w+)\]/g);
   if (matches && matches.length > 0) {
     for (const match of matches) {

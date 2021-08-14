@@ -1,16 +1,18 @@
 import { hydrate } from "preact";
-import fetch from "isomorphic-unfetch";
+import fetch from "unfetch";
 import { Router } from "wouter-preact";
 import { createAsyncPage } from "./AyncPage";
-import App from "../site/app";
+import App from './app';
 
-const items = import.meta.glob("../site/routes/**/*.tsx");
+const items = import.meta.glob("../../../pages/**/*.tsx");
+
 const pages = Object.entries(items).map(([file, loader]) => {
-  const page = createAsyncPage(file, () => loader(), fetch);
+  const page = createAsyncPage(file, () => loader(), fetch as any);
   return page;
 });
 
-function renderToDOM(url: string) {
+function renderToDOM() {
+  let url = window.location.pathname;
   if (!url.endsWith("/")) {
     url += "/";
   }
@@ -28,4 +30,4 @@ function renderToDOM(url: string) {
   });
 }
 
-renderToDOM(window.location.pathname);
+renderToDOM();

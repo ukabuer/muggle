@@ -1,6 +1,12 @@
 node_modules
 dist
 .vscode
-src/*.js
-*.map
 exports
+example/package-lock.json
+example/dist
+src/*.js
+src/*.d.ts
+src/*.map
+client/*.js
+client/*.d.ts
+client/*.map
