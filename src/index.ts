@@ -1,13 +1,15 @@
 import cac from "cac";
+import createServer from './server'
+import render from './prerender'
 
 const cli = cac();
 
 cli.command("serve").action(() => {
-  console.log("serve");
+  createServer();
 });
 
 cli.command("render").action(() => {
-  console.log("render");
+  render();
 });
 
 cli.parse();

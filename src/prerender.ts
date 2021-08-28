@@ -22,13 +22,13 @@ function get_href(attrs: string) {
 }
 
 export async function prerender() {
-  const pages = await glob("site/routes/**/*.tsx");
-  const apis = await glob("site/routes/**/.ts");
+  const pages = await glob("pages/**/*.tsx");
+  const apis = await glob("api/**/.ts");
   const urls = pages
     .concat(apis)
     .filter((url) => !url.match(/\[\w+\]/))
     .map((url) =>
-      url.replace(".tsx", "").replace("/index", "/").replace("site/routes", "")
+      url.replace(".tsx", "").replace("/index", "/").replace("api", "")
     );
 
   // start server with rendering mode
@@ -80,7 +80,7 @@ export async function prerender() {
 async function startServerAndPrerender() {
   await vite.build({
     configFile: false,
-    root: resolve(__dirname, "../site"),
+    root: "",
     esbuild: {
       jsxFactory: "h",
       jsxFragment: "Fragment",
@@ -88,7 +88,7 @@ async function startServerAndPrerender() {
     },
     build: {
       emptyOutDir: true,
-      ssr: resolve(__dirname, "./entry-server.tsx"),
+      ssr: resolve(__dirname, "../client/entry-server.tsx"),
       ssrManifest: true,
       outDir: "./dist/server",
       manifest: true,
@@ -97,7 +97,7 @@ async function startServerAndPrerender() {
 
   await vite.build({
     configFile: false,
-    root: resolve(__dirname, "../site"),
+    root: "",
     esbuild: {
       jsxFactory: "h",
       jsxFragment: "Fragment",
@@ -134,13 +134,17 @@ async function startServerAndPrerender() {
   });
 }
 
-if (isMainThread) {
-  startServerAndPrerender();
-} else {
-  prerender().then(() => {
-    fs.copySync("site/public/", "site/dist/", {
-      overwrite: true,
+function render() {
+  if (isMainThread) {
+    startServerAndPrerender();
+  } else {
+    prerender().then(() => {
+      fs.copySync("public/", "dist/", {
+        overwrite: true,
+      });
+      parentPort?.postMessage(null);
     });
-    parentPort?.postMessage(null);
-  });
+  } 
 }
+
+export default render;
