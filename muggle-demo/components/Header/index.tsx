@@ -1,6 +1,6 @@
 import { FunctionalComponent } from "preact";
 import { Link } from 'muggle-client';
-// import "./style.scss";
+import "./style.scss";
 
 const Header: FunctionalComponent = () => {
   return (

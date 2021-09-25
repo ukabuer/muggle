@@ -9,3 +9,5 @@ export { AppContextProvider, useAppContext } from "./context.js";
 export { Link } from "wouter-preact";
 
 export { default as renderToDOM } from "./entry-client.js";
+
+export { Module } from './types';

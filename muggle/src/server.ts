@@ -2,13 +2,15 @@ import fs from "fs-extra";
 import sirv from "sirv";
 import polka from "polka";
 import glob from "fast-glob";
-import { fileURLToPath } from "url";
+import { fileURLToPath, pathToFileURL } from "url";
 import { resolve, dirname } from "path";
 import prefresh from "@prefresh/vite";
-import { createServer as createViteServer } from "vite";
-import fetch from "isomorphic-unfetch";
+import { createServer as createViteServer, build } from "vite";
 import watchAPI from "./api-watcher.js";
-import { renderToHtml } from "./entry-server.js";
+
+function getAbsPath(relative: string) {
+  return resolve(dirname(fileURLToPath(import.meta.url)), relative);
+}
 
 async function createServer(prerender = false) {
   const app = polka();
@@ -58,15 +60,43 @@ async function createServer(prerender = false) {
     });
   }
 
-  const pagesFiles = await glob("pages/**/*.tsx");
-  watchAPI(pagesFiles, "dist/.tmp/");
+  fs.ensureDirSync("dist/.tmp");
 
   fs.writeFileSync(
     "dist/.tmp/entry-client.js",
     `import { renderToDOM } from "muggle-client";
-const items = import.meta.glob("./pages/**/*.js");
+const items = import.meta.glob("../../pages/**/*.tsx");
 renderToDOM(items);`
   );
+
+  fs.writeFileSync(
+    "dist/.tmp/entry-server.js",
+    `import { renderToHtml } from "muggle/entry-server";
+const items = import.meta.glob("../../pages/**/*.tsx");
+export default (url) =>  renderToHtml(url, items);`
+  );
+
+  build({
+    configFile: false,
+    root: "",
+    esbuild: {
+      jsxFactory: "h",
+      jsxFragment: "Fragment",
+      jsxInject: `import { h, Fragment } from 'preact'`,
+    },
+    build: {
+      ssr: true,
+      emptyOutDir: false,
+      outDir: "./dist/.tmp/server/",
+      rollupOptions: {
+        input: "dist/.tmp/entry-server.js",
+        output: {
+          format: "esm",
+          esModule: true,
+        },
+      },
+    },
+  });
 
   const vite = await createViteServer({
     configFile: false,
@@ -97,18 +127,24 @@ renderToDOM(items);`
   app.get("/*", async (req, res) => {
     const url = req.originalUrl;
     try {
-      const templatePath = resolve(
-        dirname(fileURLToPath(import.meta.url)),
-        "../template.html"
-      );
-      let template = prerender
-        ? fs.readFileSync("dist/.tmp/index.html", "utf-8")
-        : fs.readFileSync(templatePath, "utf-8");
+      let template = "";
       if (!prerender) {
+        const templatePath = getAbsPath("../template.html");
+        template = fs.readFileSync(templatePath, "utf-8");
+      } else {
+        template = fs.readFileSync("dist/.tmp/index.html", "utf-8");
         template = await vite.transformIndexHtml(url, template);
       }
 
-      const [data, head, app] = await renderToHtml(url, fetch);
+      const entryServerScript = resolve("dist/.tmp/server/entry-server.js");
+      const renderToHtml = await import(
+        pathToFileURL(resolve(entryServerScript)).toString()
+      ).then((m) => m.default);
+      if (!renderToHtml) {
+        console.error("Failed to load entry-server");
+        return;
+      }
+      const [data, head, app] = await renderToHtml(url);
 
       let html = template.replace(
         "<!-- @HEAD@ -->",

@@ -1,7 +1,7 @@
 import { FunctionComponent } from "preact";
-import Header from "../Header/index.js";
-import Footer from "../Footer/index.js";
-// import "./style.scss";
+import Header from "../Header";
+import Footer from "../Footer";
+import "./style.scss";
 
 const Layout: FunctionComponent = ({ children }) => {
   return (

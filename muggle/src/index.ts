@@ -13,3 +13,5 @@ cli.command("build").action(() => {
 });
 
 cli.parse();
+
+export { renderToHtml } from './entry-server.js';

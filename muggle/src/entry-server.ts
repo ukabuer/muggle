@@ -1,31 +1,23 @@
 import { h } from "preact";
-import glob from "fast-glob";
-import { pathToFileURL } from "url";
-import { resolve } from "path";
 import { Router } from "wouter-preact";
 import renderToString from "preact-render-to-string";
 import staticLocationHook from "wouter-preact/static-location";
-import { Head, createAsyncPage, App } from "muggle-client";
+import { Head, createAsyncPage, App, Module } from "muggle-client";
+import fetch from "isomorphic-unfetch";
 
-export async function renderToHtml(
-  url: string,
-  fetch: any
-): Promise<[unknown, string, string]> {
+export async function renderToHtml(url: string, items: Record<string, () => Promise<Module>>): Promise<[unknown, string, string]> {
   if (!url.endsWith("/")) {
     url += "/";
   }
 
-  const items: any = {};
-  const dir = "dist/.tmp/pages";
-  const files = await glob(`${dir}/**/*.js`);
-  for (const file of files) {
-    const path = pathToFileURL(resolve(file)).toString();
-    const route = file
-      .substr(0, file.length - ".js".length)
-      .replace(/\/index$/, "/")
-      .replace(dir, "");
-    items[route] = () => import(path);
-  }
+  Object.keys(items).forEach((filePath) => {
+    const route = filePath
+      .substr(0, filePath.length - ".tsx".length)
+      .replace(/\/index/, "/")
+      .replace("../../pages", "");
+    items[route] = items[filePath];
+    delete items[filePath];
+  });
   const pages = Object.entries(items).map(([file, loader]) => {
     const page = createAsyncPage(file, loader as any, (url) =>
       fetch("http://localhost:3000" + url)

@@ -1,6 +1,6 @@
 import { FunctionComponent } from "preact";
 import { Head } from "muggle-client";
-import Layout from "../../components/Layout/index.js";
+import Layout from "../../components/Layout";
 
 const BlogPage: FunctionComponent = () => {
   return (

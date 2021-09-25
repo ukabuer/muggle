@@ -3,12 +3,13 @@
   "version": "1.0.0",
   "description": "",
   "main": "dist/index.js",
+  "module": "dist/index.js",
   "type": "module",
   "bin": {
     "muggle": "bin/muggle.js"
   },
   "exports": {
-    "*": "./dist/*"
+    "./entry-server": "./dist/entry-server.js"
   },
   "typesVersions": {
     "*": {
@@ -39,7 +40,7 @@
     "sass": "^1.32.12",
     "sirv": "^1.0.12",
     "typescript": "^4.2.4",
-    "vite": "^2.5.0",
+    "vite": "^2.5.10",
     "wouter-preact": "^2.7.4"
   },
   "devDependencies": {

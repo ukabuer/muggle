@@ -13,9 +13,9 @@ export default function renderToDOM(items: Record<string, () => Promise<Module>>
 
   Object.keys(items).forEach((filePath) => {
     const route = filePath
-      .substr(0, filePath.length - ".js".length)
+      .substr(0, filePath.length - ".tsx".length)
       .replace(/\/index/, "/")
-      .replace("./pages", "");
+      .replace("../../pages", "");
     items[route] = items[filePath];
     delete items[filePath];
   });
