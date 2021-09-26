@@ -19,8 +19,8 @@
     }
   },
   "scripts": {
-    "build": "tsc -p tsconfig.ref.json",
-    "watch": "tsc -w -p tsconfig.ref.json",
+    "build": "tsc -p tsconfig.json",
+    "watch": "tsc -w -p tsconfig.json",
     "dev": "node src/serve",
     "prerender": "node src/prerender",
     "test": "echo \"Error: no test specified\" && exit 1"

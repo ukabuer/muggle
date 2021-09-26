@@ -10,15 +10,15 @@ export async function renderToHtml(url: string, items: Record<string, () => Prom
     url += "/";
   }
 
+  const files: typeof items = {};
   Object.keys(items).forEach((filePath) => {
     const route = filePath
       .substr(0, filePath.length - ".tsx".length)
       .replace(/\/index/, "/")
       .replace("../../pages", "");
-    items[route] = items[filePath];
-    delete items[filePath];
+    files[route] = items[filePath];
   });
-  const pages = Object.entries(items).map(([file, loader]) => {
+  const pages = Object.entries(files).map(([file, loader]) => {
     const page = createAsyncPage(file, loader as any, (url) =>
       fetch("http://localhost:3000" + url)
     );

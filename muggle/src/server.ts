@@ -5,7 +5,7 @@ import glob from "fast-glob";
 import { fileURLToPath, pathToFileURL } from "url";
 import { resolve, dirname } from "path";
 import prefresh from "@prefresh/vite";
-import { createServer as createViteServer, build } from "vite";
+import { createServer as createViteServer, build as viteBuild } from "vite";
 import watchAPI from "./api-watcher.js";
 
 function getAbsPath(relative: string) {
@@ -60,39 +60,30 @@ async function createServer(prerender = false) {
     });
   }
 
-  fs.ensureDirSync("dist/.tmp");
-
-  fs.writeFileSync(
-    "dist/.tmp/entry-client.js",
-    `import { renderToDOM } from "muggle-client";
-const items = import.meta.glob("../../pages/**/*.tsx");
-renderToDOM(items);`
-  );
-
-  fs.writeFileSync(
-    "dist/.tmp/entry-server.js",
-    `import { renderToHtml } from "muggle/entry-server";
-const items = import.meta.glob("../../pages/**/*.tsx");
-export default (url) =>  renderToHtml(url, items);`
-  );
-
-  build({
+  await viteBuild({
     configFile: false,
     root: "",
+    mode: prerender ? "production" : "development",
     esbuild: {
       jsxFactory: "h",
       jsxFragment: "Fragment",
       jsxInject: `import { h, Fragment } from 'preact'`,
     },
     build: {
-      ssr: true,
+      ssr: "dist/.tmp/entry-server-template.js",
+      watch: prerender
+        ? null
+        : {
+            include: "./**/*",
+            exclude: "./node_modules/**",
+          },
       emptyOutDir: false,
-      outDir: "./dist/.tmp/server/",
+      outDir: "./dist/.tmp/",
       rollupOptions: {
-        input: "dist/.tmp/entry-server.js",
+        external: ["muggle/entry-server", "muggle-client"],
         output: {
           format: "esm",
-          esModule: true,
+          entryFileNames: "entry-server.js",
         },
       },
     },
@@ -100,7 +91,8 @@ export default (url) =>  renderToHtml(url, items);`
 
   const vite = await createViteServer({
     configFile: false,
-    root: process.cwd(),
+    root: "dist/.tmp",
+    mode: prerender ? "production" : "development",
     plugins: prerender ? [] : [prefresh()],
     esbuild: {
       jsxFactory: "h",
@@ -124,22 +116,24 @@ export default (url) =>  renderToHtml(url, items);`
   } as any);
   app.use(vite.middlewares);
 
+  let template = "";
+  if (!prerender) {
+    const target = resolve("dist/.tmp/index.html");
+    template = fs.readFileSync(target, "utf-8");
+    template = await vite.transformIndexHtml("/", template);
+  } else {
+    template = fs.readFileSync("dist/.tmp/index.html", "utf-8");
+  }
+
   app.get("/*", async (req, res) => {
     const url = req.originalUrl;
     try {
-      let template = "";
-      if (!prerender) {
-        const templatePath = getAbsPath("../template.html");
-        template = fs.readFileSync(templatePath, "utf-8");
-      } else {
-        template = fs.readFileSync("dist/.tmp/index.html", "utf-8");
-        template = await vite.transformIndexHtml(url, template);
-      }
-
-      const entryServerScript = resolve("dist/.tmp/server/entry-server.js");
-      const renderToHtml = await import(
-        pathToFileURL(resolve(entryServerScript)).toString()
-      ).then((m) => m.default);
+      const entryServerScript = resolve("dist/.tmp/entry-server.js");
+      const lastModified = fs.statSync(entryServerScript).mtimeMs;
+      const importPath =
+        pathToFileURL(resolve(entryServerScript)).toString() +
+        `?timestep=${lastModified}`;
+      const renderToHtml = await import(importPath).then((m) => m.default);
       if (!renderToHtml) {
         console.error("Failed to load entry-server");
         return;

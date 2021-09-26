@@ -35,7 +35,6 @@ export async function prerender() {
         .replace(/^api/, "")
         .replace(/^pages/, "")
     );
-  console.log(urls)
   // start server with rendering mode
   const unresolved = [...urls];
   const resolved = new Set();
@@ -83,16 +82,10 @@ export async function prerender() {
 }
 
 async function startServerAndPrerender() {
-  const templatePath = resolve(
-    dirname(fileURLToPath(import.meta.url)),
-    "../template.html"
-    );
-  const target = resolve("dist/.tmp/index.html");
-  fs.copyFileSync(templatePath, target);
-
   await vite.build({
     configFile: false,
-    root: "",
+    mode: "production",
+    root: "dist/.tmp",
     esbuild: {
       jsxFactory: "h",
       jsxFragment: "Fragment",
@@ -100,20 +93,11 @@ async function startServerAndPrerender() {
     },
     build: {
       emptyOutDir: false,
-      outDir: "./dist",
-      manifest: true,
-      rollupOptions: {
-        input: target
-      }
+      outDir: resolve("dist"),
     },
   });
 
-  fs.copyFileSync(
-    "dist/dist/.tmp/index.html",
-    target
-  );
-
-  fs.rmSync("dist/dist", { force: true, recursive: true });
+  fs.copyFileSync("dist/index.html", "dist/.tmp/index.html");
 
   const app = await createServer(true);
   const filename = fileURLToPath(import.meta.url);

@@ -1,6 +1,7 @@
 import { FunctionComponent } from "preact";
 import { Head } from "muggle-client";
 import Layout from "../components/Layout";
+import './style.scss';
 
 const HomePage: FunctionComponent = () => {
   return (
@@ -8,7 +9,7 @@ const HomePage: FunctionComponent = () => {
       <Head>
         <title>Home | Muggle Demo</title>
       </Head>
-      <h1>Home</h1>
+      <h1 className="home">Home</h1>
     </Layout>
   );
 };
