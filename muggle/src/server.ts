@@ -21,10 +21,9 @@ async function createServer(prerender = false) {
   }
   // site api
   const apiFiles = await glob("api/**/*.ts");
-  watchAPI(apiFiles, "dist/.tmp/api");
+  watchAPI(apiFiles, "dist/.tmp/");
   for (const path of apiFiles) {
-    let route =
-      "/" + path.replace("index.ts", "index.json").replace(/\\/g, "/");
+    let route = "/" + path.replace(/.ts$/, "");
     const matches = route.match(/\[(\w+)\]/g);
     if (matches && matches.length > 0) {
       for (const match of matches) {
@@ -35,28 +34,35 @@ async function createServer(prerender = false) {
 
     const script = resolve("dist/.tmp", path.replace(".ts", ".js"));
     app.get(route, async (req, res) => {
-      const originEnd = res.end.bind(res);
-      let saved = "";
-      res.end = (data: any) => {
-        if (prerender) {
-          saved = data;
+      let result = null;
+      try {
+        const lastModified = fs.statSync(script).mtimeMs;
+        const importUrl = `${pathToFileURL(
+          script
+        )}?lastModified=${lastModified}`;
+        const handler = await import(importUrl).then((m) => m.get);
+        const data = await handler(req);
+        if (data === null || data === undefined) {
+          res.end("");
+          return;
         }
-        originEnd(data);
-      };
-      const handler = await import(script).then((m) => m.get);
-      await handler(req, res);
+        result = JSON.stringify(data);
+        res.end(result);
+      } catch (e: unknown) {
+        console.error(
+          "Failed to excute script `" + script + "`: " + (e as Error).message
+        );
+        res.end("404");
+        return;
+      }
 
       if (prerender) {
         const url = req.originalUrl;
         const file = `dist${url}`;
         const dir = file.replace("index.json", "");
-        const exists = fs.existsSync(dir);
-        if (!exists) {
-          fs.mkdirSync(dir);
-        }
-        fs.writeFileSync(file, saved);
+        fs.ensureDirSync(dir);
+        fs.writeFileSync(file, result);
       }
-      res.end = originEnd;
     });
   }
 

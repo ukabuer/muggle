@@ -2,7 +2,7 @@ import glob from "fast-glob";
 import fetch from "isomorphic-unfetch";
 import { isMainThread, Worker, parentPort } from "worker_threads";
 import * as vite from "vite";
-import { dirname, resolve } from "path";
+import { resolve } from "path";
 import fs from "fs-extra";
 import { fileURLToPath } from "url";
 import createServer from "./server.js";
@@ -30,10 +30,11 @@ export async function prerender() {
     .filter((url) => !url.match(/\[\w+\]/))
     .map((url) =>
       url
+        .replace(/^api/, "/api")
+        .replace(/^pages/, "")
+        .replace(/\.ts$/, "")
         .replace(/\.tsx$/, "")
         .replace(/\/index$/, "/")
-        .replace(/^api/, "")
-        .replace(/^pages/, "")
     );
   // start server with rendering mode
   const unresolved = [...urls];
@@ -92,6 +93,7 @@ async function startServerAndPrerender() {
       jsxInject: `import { h, Fragment } from 'preact'`,
     },
     build: {
+      cssCodeSplit: false,
       emptyOutDir: false,
       outDir: resolve("dist"),
     },
