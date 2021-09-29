@@ -3,7 +3,7 @@ import sirv from "sirv";
 import polka from "polka";
 import glob from "fast-glob";
 import { fileURLToPath, pathToFileURL } from "url";
-import { resolve, dirname } from "path";
+import { resolve, dirname, extname } from "path";
 import prefresh from "@prefresh/vite";
 import { createServer as createViteServer, build as viteBuild } from "vite";
 import watchAPI from "./api-watcher.js";
@@ -131,10 +131,18 @@ async function createServer(prerender = false) {
     template = fs.readFileSync("dist/.tmp/index.html", "utf-8");
   }
 
+  const entryServerScript = resolve("dist/.tmp/entry-server.js");
   app.get("/*", async (req, res) => {
     const url = req.originalUrl;
+
+    const ext = extname(url);
+    if (ext && ext !== ".html") {
+      res.statusCode = 404;
+      res.end("Not Found.");
+      return;
+    }
+
     try {
-      const entryServerScript = resolve("dist/.tmp/entry-server.js");
       const lastModified = fs.statSync(entryServerScript).mtimeMs;
       const importPath =
         pathToFileURL(resolve(entryServerScript)).toString() +
