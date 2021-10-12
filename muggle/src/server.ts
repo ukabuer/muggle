@@ -86,7 +86,7 @@ async function createServer(prerender = false) {
       emptyOutDir: false,
       outDir: "./dist/.tmp/",
       rollupOptions: {
-        external: ["muggle/entry-server", "muggle/client", "muggle-client"],
+        external: ["muggle", "muggle/server", "muggle/client", "muggle-client"],
         output: {
           format: "esm",
           entryFileNames: "entry-server.js",

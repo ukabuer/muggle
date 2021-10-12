@@ -9,8 +9,8 @@
     "muggle": "bin/muggle.js"
   },
   "exports": {
-    "./client": "./dist/client.js",
-    "./entry-server": "./dist/entry-server.js"
+    "./server": "./dist/index.js",
+    "./client": "./dist/client.js"
   },
   "typesVersions": {
     "*": {
