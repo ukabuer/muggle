@@ -16,7 +16,7 @@ function prepare() {
 
   fs.writeFileSync(
     "dist/.tmp/entry-client-template.js",
-    `import { renderToDOM } from "muggle-client";
+    `import { renderToDOM } from "muggle/client";
      const items = import.meta.glob("../../pages/**/*.tsx");
      renderToDOM(items);`
   );

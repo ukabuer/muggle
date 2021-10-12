@@ -1,5 +1,5 @@
 import { FunctionComponent } from "preact";
-import { Head } from "muggle-client";
+import { Head } from "muggle/client";
 import Layout from "../../components/Layout";
 
 const AboutPage: FunctionComponent = () => {
