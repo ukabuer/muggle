@@ -113,7 +113,7 @@ async function createServer(prerender = false) {
       middlewareMode: true,
       hmr: !prerender,
       fs: {
-        strict: true,
+        strict: false,
       },
     },
     ssr: {
