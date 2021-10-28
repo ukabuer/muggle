@@ -8,6 +8,7 @@ const Header: FunctionalComponent = () => {
       <div className="nav">
         <Link href="/">Home</Link>
         <Link href="/blog/">Blog</Link>
+        <Link href="/aaaaaaa/">Error</Link>
       </div>
     </div>
   );

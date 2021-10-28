@@ -2,11 +2,12 @@ import { Component, ComponentType } from "preact";
 import makeMatcher from "wouter-preact/matcher";
 import { AsyncPageType, Module } from "./types.js";
 import AppContext from "./context.js";
+import unfetch from "isomorphic-unfetch";
 
 export function createAsyncPage<Props>(
   route: string,
   loader: () => Promise<Module<ComponentType<Props>>>,
-  fetch: typeof window.fetch
+  fetch: typeof unfetch
 ) {
   const matches = route.match(/\[(\w+)\]/g);
   if (matches && matches.length > 0) {

@@ -2,15 +2,11 @@ import fs from "fs-extra";
 import sirv from "sirv";
 import polka from "polka";
 import glob from "fast-glob";
-import { fileURLToPath, pathToFileURL } from "url";
-import { resolve, dirname, extname } from "path";
+import { pathToFileURL } from "url";
+import { resolve, extname } from "path";
 import prefresh from "@prefresh/vite";
 import { createServer as createViteServer, build as viteBuild } from "vite";
 import watchAPI from "./api-watcher.js";
-
-function getAbsPath(relative: string) {
-  return resolve(dirname(fileURLToPath(import.meta.url)), relative);
-}
 
 async function createServer(prerender = false) {
   const app = polka();
@@ -152,17 +148,8 @@ async function createServer(prerender = false) {
         console.error("Failed to load entry-server");
         return;
       }
-      const [data, head, app] = await renderToHtml(url);
-
-      let html = template.replace(
-        "<!-- @HEAD@ -->",
-        head +
-          `<script>window.__PRELOAD_DATA__ = ${JSON.stringify(
-            data || {}
-          )};</script>`.trim()
-      );
-      html = html.replace(`<!-- @APP@ -->`, app);
-
+      const html = await renderToHtml(url, template);
+  
       res.writeHead(200, { "Content-Type": "text/html" });
       res.end(html);
 

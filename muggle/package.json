@@ -1,6 +1,6 @@
 {
   "name": "muggle",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "description": "",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -22,14 +22,13 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "watch": "tsc -w -p tsconfig.json",
-    "dev": "node src/serve",
-    "prerender": "node src/prerender",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@prefresh/vite": "^2.2.2",
     "cac": "^6.7.3",
     "fast-glob": "^3.2.5",
     "fs-extra": "^10.0.0",
@@ -44,7 +43,6 @@
     "wouter-preact": "^2.7.4"
   },
   "devDependencies": {
-    "@prefresh/vite": "^2.2.2",
     "@types/fs-extra": "^9.0.12",
     "@types/node": "^15.0.1",
     "@typescript-eslint/eslint-plugin": "^4.22.0",

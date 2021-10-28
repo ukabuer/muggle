@@ -25,7 +25,7 @@ function prepare() {
     "dist/.tmp/entry-server-template.js",
     `import { renderToHtml } from "muggle/server";
      const items = import.meta.glob("../../pages/**/*.tsx");
-     export default (url) => renderToHtml(url, items);`
+     export default (url, template) => renderToHtml(url, items, template);`
   );
 }
 

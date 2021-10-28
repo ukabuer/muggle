@@ -2,10 +2,14 @@ import { h } from "preact";
 import { Router } from "wouter-preact";
 import renderToString from "preact-render-to-string";
 import staticLocationHook from "wouter-preact/static-location";
-import { Head, createAsyncPage, App, Module } from "muggle-client";
+import { Head, createAsyncPage, App, Module, ErrorPath } from "muggle-client";
 import fetch from "isomorphic-unfetch";
 
-export async function renderToHtml(url: string, items: Record<string, () => Promise<Module>>): Promise<[unknown, string, string]> {
+export async function renderToHtml(
+  url: string,
+  items: Record<string, () => Promise<Module>>,
+  template: string
+): Promise<string> {
   if (!url.endsWith("/")) {
     url += "/";
   }
@@ -19,20 +23,28 @@ export async function renderToHtml(url: string, items: Record<string, () => Prom
     files[route] = items[filePath];
   });
   const pages = Object.entries(files).map(([file, loader]) => {
-    const page = createAsyncPage(file, loader as any, (url) =>
+    return createAsyncPage(file, loader, (url) =>
       fetch("http://localhost:3000" + url)
     );
-    return page;
   });
 
-  const page = pages.find((page) => page.Match(url)[0]);
+  let data: unknown = null;
+  let page = pages.find((page) => page.Match(url)[0]);
+  if (!page) {
+    url = ErrorPath;
+    page = pages.find((page) => page.Match(ErrorPath)[0]);
+    data = { error: "Not Found" };
+  }
 
-  let data: unknown = { error: "Not Found" };
   if (page) {
     try {
-      data = await page.Load(page.Match(url)[1]);
+      if (!data) {
+        data = await page.Load(page.Match(url)[1]);
+      } else {
+        await page.LoadComponent();
+      }
     } catch (err: unknown) {
-      data = { error: (err as Error).message };
+      data = { error: (err && (err as Error).message) || "unknown" };
     }
   }
 
@@ -45,5 +57,14 @@ export async function renderToHtml(url: string, items: Record<string, () => Prom
   const head = Head.rewind()
     .map((n) => renderToString(n))
     .join("");
-  return [data, head, app];
+
+  let html = template.replace(
+    "<!-- @HEAD@ -->",
+    head +
+      `<script>window.__PRELOAD_DATA__ = ${JSON.stringify(
+        data || {}
+      )};</script>`.trim()
+  );
+  html = html.replace(`<!-- @APP@ -->`, app);
+  return html;
 }

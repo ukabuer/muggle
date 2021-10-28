@@ -1,6 +1,6 @@
 export { createAsyncPage } from "./AyncPage.js";
 
-export { default as App } from "./App.js";
+export { default as App, ErrorPath } from "./App.js";
 
 export { default as Head } from "./Head.js";
 

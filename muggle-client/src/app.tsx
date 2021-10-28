@@ -1,21 +1,16 @@
 import { ComponentType, FunctionComponent } from "preact";
 import { Route, Switch, useLocation, useRouter } from "wouter-preact";
-import { useEffect, useState } from "preact/hooks";
+import { useEffect, useMemo, useState } from "preact/hooks";
 import Head from "./Head.js";
 import { AsyncPageType } from "./types.js";
 import AppContext from "./context.js";
-
-function isError(data: unknown): data is { error: "string" } {
-  return (
-    data instanceof Object &&
-    Object.prototype.hasOwnProperty.call(data, "error")
-  );
-}
 
 type AppProps = {
   pages: Array<AsyncPageType>;
   initial?: unknown;
 };
+
+export const ErrorPath = "/error";
 
 export type AppType = ComponentType<AppProps>;
 
@@ -23,18 +18,19 @@ const DefaultErrorPage: FunctionComponent = () => {
   return <div><Head><title>Error</title></Head>Error</div>;
 };
 
-const ErrorPage = DefaultErrorPage;
-
 const App: FunctionComponent<AppProps> = ({ pages, initial = {} }) => {
   const { matcher } = useRouter();
   const [currentLocation] = useLocation();
   const [renderLocation, setRenderLocation] = useState(currentLocation);
   const [page, setPage] = useState(initial);
   const [loading, setLoading] = useState(false);
+  const ErrorPage = useMemo(() => {
+    return pages.find((page) => page.route == ErrorPath) || null;
+  }, [pages]);
 
   useEffect(() => {
     let matchedParams: unknown | null = null;
-    let macthedPage: AsyncPageType | null = null;
+    let macthedPage: AsyncPageType | null = ErrorPage;
     for (const page of pages) {
       const match = matcher(page.route, currentLocation);
       const matched = match[0];
@@ -46,28 +42,28 @@ const App: FunctionComponent<AppProps> = ({ pages, initial = {} }) => {
     }
 
     if (!macthedPage) {
+      setRenderLocation(ErrorPath);
       return;
     }
 
     setLoading(true);
     macthedPage
       .Load(matchedParams)
-      .then((data: any) => {
-        setPage(data);
-        setRenderLocation(currentLocation);
+      .then((data: unknown) => {
+        const isErrorPage = macthedPage === ErrorPage;
+        setPage(isErrorPage ? { error: "Not Found" } : data);
+        setRenderLocation(isErrorPage ? ErrorPath : currentLocation);
       })
-      .catch((err: any) => {
-        setPage({ error: err.message });
+      .catch((err: unknown) => {
+        setPage({ error: (err && (err as Error).message) || 'unknwon' });
       })
       .then(() => {
         setLoading(false);
         window.scrollTo(0, 0);
       });
-  }, [currentLocation, matcher, pages]);
+  }, [currentLocation, matcher, pages, ErrorPage]);
 
-  const errorRoute = "/error";
-  const location = isError(page) ? errorRoute : renderLocation;
-
+  const location = renderLocation;
   return (
     <AppContext.Provider
       value={{
@@ -83,11 +79,7 @@ const App: FunctionComponent<AppProps> = ({ pages, initial = {} }) => {
           .map((page) => {
             return <Route path={page.route} component={page} />;
           })
-          .concat([
-            <Route
-              component={(ErrorPage as FunctionComponent) || DefaultErrorPage}
-            />,
-          ])}
+          .concat([<Route component={DefaultErrorPage} />])}
       </Switch>
     </AppContext.Provider>
   );
