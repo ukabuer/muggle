@@ -2,7 +2,7 @@ import { hydrate } from "preact";
 import fetch from "isomorphic-unfetch";
 import { Router } from "wouter-preact";
 import { createAsyncPage } from "./AyncPage.js";
-import App, { ErrorPath } from "./app.js";
+import App, { ErrorPath } from "./App.js";
 import { Module } from "./types.js";
 
 export default function renderToDOM(items: Record<string, () => Promise<Module>>) {
