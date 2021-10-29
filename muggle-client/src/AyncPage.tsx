@@ -1,8 +1,8 @@
+import unfetch from "isomorphic-unfetch";
 import { Component, ComponentType } from "preact";
 import makeMatcher from "wouter-preact/matcher";
 import { AsyncPageType, Module } from "./types.js";
 import AppContext from "./context.js";
-import unfetch from "isomorphic-unfetch";
 
 export function createAsyncPage<Props>(
   route: string,
@@ -18,7 +18,7 @@ export function createAsyncPage<Props>(
   }
   let LoadedComponent: ComponentType<Props> | null = null;
   let GetPageDataFn:
-    | ((fetch: typeof window.fetch, params?: any) => Promise<unknown>)
+    | ((fetch: typeof window.fetch, params?: unknown) => Promise<unknown>)
     | null = null;
 
   const AsyncPage: AsyncPageType = class extends Component<Props> {
@@ -32,15 +32,15 @@ export function createAsyncPage<Props>(
       }
     }
 
-    static async Load(params?: any) {
+    static async Load(params?: unknown) {
       if (LoadedComponent == null) {
-        console.log(`route \`${route}\` LoadComponent`);
+        // console.log(`route \`${route}\` LoadComponent`);
         await AsyncPage.LoadComponent();
-        console.log(`route \`${route}\` LoadedComponent ${LoadedComponent !== null}`);
+        // console.log(`route \`${route}\` LoadedComponent ${LoadedComponent !== null}`);
       }
 
       if (GetPageDataFn != null) {
-        console.log(`route \`${route}\` GetPageDataFn`);
+        // console.log(`route \`${route}\` GetPageDataFn`);
         return GetPageDataFn(fetch, params);
       }
 

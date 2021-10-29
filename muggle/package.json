@@ -1,6 +1,6 @@
 {
   "name": "muggle",
-  "version": "0.8.2",
+  "version": "0.8.3",
   "description": "",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -21,7 +21,7 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "watch": "tsc -w -p tsconfig.json",
+    "dev": "tsc -w -p tsconfig.json",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -33,7 +33,7 @@
     "fast-glob": "^3.2.5",
     "fs-extra": "^10.0.0",
     "isomorphic-unfetch": "^3.1.0",
-    "muggle-client": "*",
+    "muggle-client": "^0.8.1",
     "polka": "^1.0.0-next.15",
     "preact": "^10.5.13",
     "preact-render-to-string": "^5.1.19",

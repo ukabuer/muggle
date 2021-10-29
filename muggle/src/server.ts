@@ -3,10 +3,11 @@ import sirv from "sirv";
 import polka from "polka";
 import glob from "fast-glob";
 import { pathToFileURL } from "url";
-import { resolve, extname } from "path";
+import { resolve, extname, dirname, join } from "path";
 import prefresh from "@prefresh/vite";
 import { createServer as createViteServer, build as viteBuild } from "vite";
 import watchAPI from "./api-watcher.js";
+import { store } from "./cli.js";
 
 async function createServer(prerender = false) {
   const app = polka();
@@ -17,7 +18,7 @@ async function createServer(prerender = false) {
   }
   // site api
   const apiFiles = await glob("api/**/*.ts");
-  watchAPI(apiFiles, "dist/.tmp/");
+  watchAPI(apiFiles, store);
   for (const path of apiFiles) {
     let route = "/" + path.replace(/.ts$/, "");
     const matches = route.match(/\[(\w+)\]/g);
@@ -28,7 +29,7 @@ async function createServer(prerender = false) {
       }
     }
 
-    const script = resolve("dist/.tmp", path.replace(".ts", ".js"));
+    const script = resolve(store, path.replace(".ts", ".js"));
     app.get(route, async (req, res) => {
       let result = null;
       try {
@@ -72,7 +73,7 @@ async function createServer(prerender = false) {
       jsxInject: `import { h, Fragment } from 'preact'`,
     },
     build: {
-      ssr: "dist/.tmp/entry-server-template.js",
+      ssr: join(store, "entry-server-template.js"),
       watch: prerender
         ? null
         : {
@@ -80,7 +81,7 @@ async function createServer(prerender = false) {
             exclude: "./node_modules/**",
           },
       emptyOutDir: false,
-      outDir: "./dist/.tmp/",
+      outDir: store,
       rollupOptions: {
         external: ["muggle", "muggle/server", "muggle/client", "muggle-client"],
         output: {
@@ -93,7 +94,7 @@ async function createServer(prerender = false) {
 
   const vite = await createViteServer({
     configFile: false,
-    root: "dist/.tmp",
+    root: store,
     mode: prerender ? "production" : "development",
     plugins: prerender ? [] : [prefresh()],
     esbuild: {
@@ -120,14 +121,14 @@ async function createServer(prerender = false) {
 
   let template = "";
   if (!prerender) {
-    const target = resolve("dist/.tmp/index.html");
+    const target = resolve(store, "index.html");
     template = fs.readFileSync(target, "utf-8");
     template = await vite.transformIndexHtml("/", template);
   } else {
-    template = fs.readFileSync("dist/.tmp/index.html", "utf-8");
+    template = fs.readFileSync(join(store, "index.html"), "utf-8");
   }
 
-  const entryServerScript = resolve("dist/.tmp/entry-server.js");
+  const entryServerScript = resolve(store, "entry-server.js");
   app.get("/*", async (req, res) => {
     const url = req.originalUrl;
 
@@ -149,18 +150,19 @@ async function createServer(prerender = false) {
         return;
       }
       const html = await renderToHtml(url, template);
-  
+
       res.writeHead(200, { "Content-Type": "text/html" });
       res.end(html);
 
       if (prerender) {
-        const dir = `dist${url}`;
-        const exists = fs.existsSync(dir);
-        if (!exists) {
-          fs.mkdirSync(dir);
-        }
-        const file = `${dir}index.html`;
-        fs.writeFileSync(file, html);
+        const target = `dist${url}`;
+        const file = url.endsWith("/")
+          ? `${target}index.html`
+          : `${target}.html`;
+
+        const dir = dirname(file);
+        await fs.ensureDir(dir);
+        await fs.writeFile(file, html);
       }
     } catch (e: unknown) {
       vite.ssrFixStacktrace(e as Error);

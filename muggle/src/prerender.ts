@@ -2,10 +2,11 @@ import glob from "fast-glob";
 import fetch from "isomorphic-unfetch";
 import { isMainThread, Worker, parentPort } from "worker_threads";
 import * as vite from "vite";
-import { resolve } from "path";
+import { resolve, join } from "path";
 import fs from "fs-extra";
 import { fileURLToPath } from "url";
 import createServer from "./server.js";
+import { store } from './cli.js';
 
 // from https://github.com/sveltejs/kit/blob/master/packages/kit/src/core/adapt/prerender.js
 function clean_html(html: string) {
@@ -86,7 +87,7 @@ async function startServerAndPrerender() {
   await vite.build({
     configFile: false,
     mode: "production",
-    root: "dist/.tmp",
+    root: store,
     esbuild: {
       jsxFactory: "h",
       jsxFragment: "Fragment",
@@ -99,7 +100,7 @@ async function startServerAndPrerender() {
     },
   });
 
-  fs.copyFileSync("dist/index.html", "dist/.tmp/index.html");
+  fs.copyFileSync("dist/index.html", join(store, "index.html"));
 
   const app = await createServer(true);
   const filename = fileURLToPath(import.meta.url);

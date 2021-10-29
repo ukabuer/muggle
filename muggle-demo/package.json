@@ -3,12 +3,12 @@
   "version": "1.0.0",
   "private": true,
   "description": "",
+  "type": "module",
   "scripts": {
     "dev": "muggle serve",
     "build": "muggle build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "type": "module",
   "dependencies": {
     "muggle": "*",
     "preact": "^10.5.14",

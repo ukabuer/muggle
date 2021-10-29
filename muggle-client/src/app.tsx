@@ -79,7 +79,7 @@ const App: FunctionComponent<AppProps> = ({ pages, initial = {} }) => {
           .map((page) => {
             return <Route path={page.route} component={page} />;
           })
-          .concat([<Route component={DefaultErrorPage} />])}
+          .concat([<Route component={ErrorPage || DefaultErrorPage} />])}
       </Switch>
     </AppContext.Provider>
   );
