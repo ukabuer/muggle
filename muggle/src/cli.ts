@@ -7,6 +7,10 @@ import render from "./prerender.js";
 
 export const store = "dist/.tmp/";
 
+export const config = {
+  apis: "apis",
+};
+
 function prepare() {
   fs.ensureDirSync(store);
 
@@ -30,6 +34,23 @@ function prepare() {
      export default (url, template) => renderToHtml(url, items, template);`
   );
 }
+
+function mergeConfig() {
+  const configPath = "muggle.config.json";
+  if (!fs.existsSync(configPath)) {
+    return;
+  }
+
+  try {
+    const file = fs.readFileSync(configPath, "utf-8");
+    const data = JSON.parse(file);
+    Object.assign(config, data);
+  } catch (e) {
+    console.error(`Invalid muggle.config.json: ${(e as Error).message}`);
+  }
+}
+
+mergeConfig();
 
 const cli = cac();
 

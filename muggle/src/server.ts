@@ -7,7 +7,7 @@ import { resolve, extname, dirname, join } from "path";
 import prefresh from "@prefresh/vite";
 import { createServer as createViteServer, build as viteBuild } from "vite";
 import watchAPI from "./api-watcher.js";
-import { store } from "./cli.js";
+import { store, config } from "./cli.js";
 
 async function createServer(prerender = false) {
   const app = polka();
@@ -16,8 +16,10 @@ async function createServer(prerender = false) {
   if (fs.existsSync("public")) {
     app.use(sirv("public"));
   }
+
   // site api
-  const apiFiles = await glob("api/**/*.ts");
+  const apiDir = config.apis;
+  const apiFiles = await glob(apiDir + "/**/*.ts");
   watchAPI(apiFiles, store);
   for (const path of apiFiles) {
     let route = "/" + path.replace(/.ts$/, "");
@@ -113,10 +115,7 @@ async function createServer(prerender = false) {
         strict: false,
       },
     },
-    ssr: {
-      external: ["isomorphic-unfetch"],
-    },
-  } as any);
+  });
   app.use(vite.middlewares);
 
   let template = "";

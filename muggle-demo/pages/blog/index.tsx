@@ -25,12 +25,12 @@ const BlogPage: FunctionComponent<{
 };
 
 type APIResult = {
-  total: number,
+  total: number;
   list: ArticleList;
 };
 
 export const preload = async (fetch: typeof window.fetch) => {
-  const request = await fetch("/api/index.json");
+  const request = await fetch("/apis/index.json");
   const data = (await request.json()) as APIResult;
   return data.list;
 };

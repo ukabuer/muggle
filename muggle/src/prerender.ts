@@ -6,7 +6,7 @@ import { resolve, join } from "path";
 import fs from "fs-extra";
 import { fileURLToPath } from "url";
 import createServer from "./server.js";
-import { store } from './cli.js';
+import { store, config } from "./cli.js";
 
 // from https://github.com/sveltejs/kit/blob/master/packages/kit/src/core/adapt/prerender.js
 function clean_html(html: string) {
@@ -25,13 +25,13 @@ function get_href(attrs: string) {
 
 export async function prerender() {
   const pages = await glob("pages/**/*.tsx");
-  const apis = await glob("api/**/*.ts");
+  const apis = await glob(config.apis + "/**/*.ts");
   const urls = pages
     .concat(apis)
     .filter((url) => !url.match(/\[\w+\]/))
     .map((url) =>
       url
-        .replace(/^api/, "/api")
+        .replace(new RegExp(`^${config.apis}`), `/${config.apis}`)
         .replace(/^pages/, "")
         .replace(/\.ts$/, "")
         .replace(/\.tsx$/, "")
