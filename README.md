@@ -5,33 +5,131 @@ Each page's data and template are defined by yourself, and the route is derived 
 __WARNING: this project is still under development.__
 
 ## Features
-- Lightweight and easy to learn
-- An intuitive way to customize pages by leveraging the power of `markdown`
-- Auto generating based on `.md` files in the directory
-- Using `pug` as the templating engine
-- Armed with a live reload dev server
+- Lightweight and intuitive
+- Write a SSR site like writing a SPA
+- SEO friendly
 
 ## Install
-Make sure you have `nodejs` >= 7.6.0 and `npm` installed beforehand
+Make sure you have `nodejs` >= 14.0.0 and `npm` installed beforehand, then run
 ``` shell
-npm install -g muggle
-# or locally in a node project
-npm install muggle
+npm install --save muggle
 ```
 
-## Command line usage
-Check out available commands and options with
-```
-muggle --help
-muggle [command] --help
+## Get Started
+### 1. Static Route
+All `*.tsx` file under directory `pages` will become a HTML file, as long as it `default` exports a valid preact component
+- `pages/about/index.tsx` -> `about/index.html`
+- `pages/404.tsx` -> `404.html`
+
+Use `Head` from `muggle/client` to define something in HTML's `<head></head>` tag:
+```jsx
+import { Head } from 'muggle/client';
+
+export default () => {
+  return (
+    <div>
+      <Head>
+        <title>My Page Title!</title>
+      </Head>
+      <h1>Hello</h1>
+    </div>
+  );
+}
 ```
 
-Create a new site:
+### 2. Load Data
+Define a named export `preload` with a `async` function to populate component's prop `page`
+```jsx
+export default ({ page }) => {
+  return (
+    <div>
+      <Head>
+        <title>My Page Title!</title>
+      </Head>
+      <h1>{page}</h1>
+    </div>
+  );
+}
+// will become <h1>Hello</h1> in HTML
+
+export async function preload(fetch) { return 'Hello'; }
+// you can fetch() something from Internet here
 ```
-muggle new <name>
+Codes in `preload` function should be platform independent, it will be excuted at both server side and client side.
+
+### 3. Dynamic Route
+Surround a file or directory's name with bracket to make it a variable:
+- `pages/blog/[post].tsx` -> `blog/first-post.html` & `blog/second-title.html`
+
+You can access the variable's value in the `preload` function:
+```jsx
+// for `pages/blog/[post].tsx`
+export async function preload(fetch, params) {
+  try {
+    const res = await fetch(`https://xxxx.com/blog/${params.post}`);
+    return await res.json();
+  } catch (err) {
+    return { error: "Not Found" };
+  }
+}
 ```
 
-Start the dev server:
+Using `Link` from `muggle/client` to make links to the site:
+```jsx
+import { Head, Link } from 'muggle/client';
+
+export default () => {
+  return (
+    <div>
+      <Head>
+        <title>My Page Title!</title>
+      </Head>
+      <div>
+        <p><Link to="/blog/first-post/">First Post</Link></p>
+        <p><Link to="/blog/2/">Second Post</Link></p>
+      </div>
+    </div>
+  );
+}
+```
+
+### 4. Server side logic
+All `*.json.ts` files under directory `apis` will become a JSON file, as long as it `named` exports a `get` function
+- `apis/blog/list.json.ts` -> `apis/blog/list.json`
+
+You can read data from file system, or fetch something from Internet:
+```jsx
+import fs from 'fs';
+import marked from 'marked';
+
+export const get = async (req) => {
+  const path = "/home/xxx/blog/markdowns" + req.path;
+  // or fetch from Internet
+  const markdown = await fs.readFile(path, 'utf8');
+  return marked(markdown);
+};
+```
+
+And you can access it from the `preload` function:
+```jsx
+export async function preload(fetch, params) {
+  return fetch(`/apis/blog/${params.post}.json`);
+}
+
+export default ({ page }) => {
+  return (
+    <div>
+      <Head>
+        <title>{page.title}</title>
+      </Head>
+       <article dangerouslySetInnerHTML={{ __html: page.content }}></article>
+    </div>
+  );
+}
+```
+
+## Devolop or build
+Start a dev server, using `npm` script to run
 ```
 muggle serve
 ```
@@ -40,58 +138,3 @@ Generate HTML files:
 ```
 muggle build
 ```
-
-## Customize
-First of all, you need to have a `muggle.config.js` which defines the `pages`, `templates` and `public` variable.
-
-`pages` indicates the directory where your `.md` files located, `templates` should be the directory contains your template files and `public` is the target directory when genrating HTML files.
-
-Each `.md` file will generate a `.html` file，using the template and data defined in its `FrontMatter`, for example, we have a `about/index.md`:
-```md
----
-title: About
-mydata: 1234
-template: about.pug
----
-
-Hello here!!
-```
-
-which becomes the data of page as
-``` json
-{
-  "title": "About",
-  "mydata": 1234,
-  "template": "about.pug",
-  "content": "<p>Hello here!!</p>"
-}
-```
-
-this page will be rendered to `about/index.html` using the template `about.pug` in the theme's `template` folder, the other data in front matter will be wrapped in the `page` variable for using in the template, the markdown's content will be rendered into HTML and can be accessed using `page.content`.
-
-If you want to define same global data, using a `site` variable in the `muggle.config.js` so it can be accessed in all templates using the name `site`.
-
-An example for `muggle.config.js`:
-``` js
-module.exports = {
-  pages: './pages',
-  theme: './themes/my-theme', // will use templates under the theme's `templates` folder
-  public: './public',
-  site: {
-    title: 'Muggle Example Site', // can be accessed using `site.title` in all templates
-    link: 'https://ukabuer.me',
-    navs: [
-      { path: '/', name: 'Home' },
-      { path: '/blog/', name: 'Blogs' },
-      { path: '/about/', name: 'About' },
-      { path: '/rss.xml', name: 'RSS' },
-    ],
-  },
-};
-```
-
-## Roadmap
-- [x] RSS
-- [ ] Pagination
-- [ ] Integrate scripts and styles building pipeline
-- [ ] Directive system
