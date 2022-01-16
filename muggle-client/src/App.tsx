@@ -15,7 +15,14 @@ export const ErrorPath = "/error";
 export type AppType = ComponentType<AppProps>;
 
 const DefaultErrorPage: FunctionComponent = () => {
-  return <div><Head><title>Error</title></Head>Error</div>;
+  return (
+    <div>
+      <Head>
+        <title>Error</title>
+      </Head>
+      Error
+    </div>
+  );
 };
 
 const App: FunctionComponent<AppProps> = ({ pages, initial = {} }) => {
@@ -52,14 +59,18 @@ const App: FunctionComponent<AppProps> = ({ pages, initial = {} }) => {
       .then((data: unknown) => {
         const isErrorPage = macthedPage === ErrorPage;
         setPage(isErrorPage ? { error: "Not Found" } : data);
-        setRenderLocation(isErrorPage ? ErrorPath : currentLocation);
+        setRenderLocation((prevRenderLocation) => {
+          if (prevRenderLocation != currentLocation) {
+            window.scrollTo(0, 0);
+          }
+          return isErrorPage ? ErrorPath : currentLocation;
+        });
       })
       .catch((err: unknown) => {
-        setPage({ error: (err && (err as Error).message) || 'unknwon' });
+        setPage({ error: (err && (err as Error).message) || "unknwon" });
       })
       .then(() => {
         setLoading(false);
-        window.scrollTo(0, 0);
       });
   }, [currentLocation, matcher, pages, ErrorPage]);
 
