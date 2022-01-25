@@ -1,14 +1,19 @@
 {
-  "files": [],
-  "references": [
-    {
-      "path": "./muggle/tsconfig.ref.json"
-    },
-    {
-      "path": "./muggle-client/tsconfig.ref.json"
-    },
-    {
-      "path": "./muggle-demo/tsconfig.ref.json"
-    }
-  ]
+  "include": ["src"],
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
+    "target": "es2020",
+    "lib": ["esnext"],
+    "module": "es2020",
+    "moduleResolution": "node",
+    "noImplicitOverride": true,
+    "allowSyntheticDefaultImports": true,
+    "jsx": "react-jsx",
+    "jsxImportSource": "preact",
+    "strict": true,
+    "declaration": true,
+    "sourceMap": true,
+    "skipLibCheck": true
+  }
 }

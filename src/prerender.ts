@@ -123,9 +123,11 @@ function render() {
 
 if (!isMainThread) {
   prerender().then(() => {
-    fs.copySync("public/", "dist/", {
-      overwrite: true,
-    });
+    if (fs.existsSync('public')) {
+      fs.copySync("public/", "dist/", {
+        overwrite: true,
+      });
+    }
     parentPort?.postMessage(null);
   });
 }

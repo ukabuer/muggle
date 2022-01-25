@@ -2,7 +2,7 @@ import { h } from "preact";
 import { Router } from "wouter-preact";
 import renderToString from "preact-render-to-string";
 import staticLocationHook from "wouter-preact/static-location";
-import { Head, createAsyncPage, App, Module, ErrorPath } from "muggle-client";
+import { Head, createAsyncPage, App, Module, ErrorPath } from "./client/index.js";
 import fetch from "isomorphic-unfetch";
 
 export async function renderToHtml(
