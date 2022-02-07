@@ -1,13 +1,16 @@
+/* eslint-disable no-param-reassign, no-restricted-syntax */
 import unfetch from "isomorphic-unfetch";
 import { Component, ComponentType } from "preact";
 import makeMatcher from "wouter-preact/matcher";
 import { AsyncPageType, Module } from "./types.js";
 import AppContext from "./context.js";
 
-export function createAsyncPage<Props>(
+type AsyncPageStateType<P> = { Page: ComponentType<P> | null };
+
+function createAsyncPage<Props>(
   route: string,
   loader: () => Promise<Module<ComponentType<Props>>>,
-  fetch: typeof unfetch
+  fetch: typeof unfetch,
 ) {
   const matches = route.match(/\[(\w+)\]/g);
   if (matches && matches.length > 0) {
@@ -18,19 +21,14 @@ export function createAsyncPage<Props>(
   }
   let LoadedComponent: ComponentType<Props> | null = null;
   let GetPageDataFn:
+    // eslint-disable-next-line no-shadow, no-unused-vars
     | ((fetch: typeof window.fetch, params?: unknown) => Promise<unknown>)
     | null = null;
 
-  const AsyncPage: AsyncPageType = class extends Component<Props> {
-    static async LoadComponent() {
-      try {
-        const m = await loader();
-        LoadedComponent = m.default || null;
-        GetPageDataFn = m.preload || null;
-      } catch(e: unknown) {
-        console.error(`route \`${route}\` LoadComponent error: ${(e as Error).toString()}`);
-      }
-    }
+  const AsyncPage: AsyncPageType<Props> = class _ extends Component<
+    Props, AsyncPageStateType<Props>
+  > {
+    static route: string = route;
 
     static async Load(params?: unknown) {
       if (LoadedComponent == null) {
@@ -47,15 +45,26 @@ export function createAsyncPage<Props>(
       return {};
     }
 
-    static route: string = route;
+    static async LoadComponent() {
+      try {
+        const m = await loader();
+        LoadedComponent = m.default || null;
+        GetPageDataFn = m.preload || null;
+      } catch (e: unknown) {
+        console.error(`route \`${route}\` LoadComponent error: ${(e as Error).toString()}`);
+      }
+    }
 
     static Match(url: string) {
       return makeMatcher()(route, url);
     }
 
-    override state = {
-      Page: LoadedComponent,
-    };
+    constructor() {
+      super();
+      this.state = {
+        Page: LoadedComponent,
+      };
+    }
 
     render() {
       const { Page } = this.state;
@@ -66,6 +75,7 @@ export function createAsyncPage<Props>(
 
       return (
         <AppContext.Consumer>
+          {/* eslint-disable-next-line react/jsx-props-no-spreading */}
           {(value) => <Page {...this.props} page={value.page} />}
         </AppContext.Consumer>
       );
@@ -74,3 +84,7 @@ export function createAsyncPage<Props>(
 
   return AsyncPage;
 }
+
+export { createAsyncPage };
+
+export default createAsyncPage;

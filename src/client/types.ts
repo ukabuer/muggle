@@ -1,4 +1,10 @@
+/* eslint-disable no-unused-vars */
 import { ComponentClass, ComponentType } from "preact";
+
+export type Module<P = ComponentType> = {
+  default?: P;
+  preload?: () => Promise<unknown>;
+};
 
 declare global {
   interface ImportMeta {
@@ -14,14 +20,9 @@ declare global {
   }
 }
 
-export type Module<P = ComponentType> = {
-  default?: P;
-  preload?: () => Promise<unknown>;
-};
-
-export interface AsyncPageType extends ComponentClass<any> {
+export interface AsyncPageType<P = unknown> extends ComponentClass<P> {
   LoadComponent(): Promise<void>;
-  Load(params?: any): Promise<unknown>;
-  Match(path: string): [boolean, any];
+  Load(params?: unknown): Promise<unknown>;
+  Match(path: string): [boolean, unknown];
   route: string;
 }

@@ -7,6 +7,26 @@ const formatHost: ts.FormatDiagnosticsHost = {
   getNewLine: () => ts.sys.newLine,
 };
 
+function reportDiagnostic(diagnostic: ts.Diagnostic) {
+  console.error(
+    "Error",
+    diagnostic.code,
+    ":",
+    ts.flattenDiagnosticMessageText(
+      diagnostic.messageText,
+      formatHost.getNewLine(),
+    ),
+  );
+}
+
+/**
+ * Prints a diagnostic every time the watch status changes.
+ * This is mainly for messages like "Starting compilation" or "Compilation completed".
+ */
+function reportWatchStatusChanged(diagnostic: ts.Diagnostic) {
+  console.info(ts.formatDiagnostic(diagnostic, formatHost));
+}
+
 export default function watchAPI(files: string[], outDir: string) {
   // TypeScript can use several different program creation "strategies":
   //  * ts.createEmitAndSemanticDiagnosticsBuilderProgram,
@@ -38,35 +58,15 @@ export default function watchAPI(files: string[], outDir: string) {
       jsxImportSource: "preact",
       outDir: resolve(process.cwd(), outDir),
       rootDir: process.cwd(),
-      skipLibCheck: true
+      skipLibCheck: true,
     },
     ts.sys,
     createProgram,
     reportDiagnostic,
-    reportWatchStatusChanged
+    reportWatchStatusChanged,
   );
 
   // `createWatchProgram` creates an initial program, watches files, and updates
   // the program over time.
   return ts.createWatchProgram(host);
-}
-
-function reportDiagnostic(diagnostic: ts.Diagnostic) {
-  console.error(
-    "Error",
-    diagnostic.code,
-    ":",
-    ts.flattenDiagnosticMessageText(
-      diagnostic.messageText,
-      formatHost.getNewLine()
-    )
-  );
-}
-
-/**
- * Prints a diagnostic every time the watch status changes.
- * This is mainly for messages like "Starting compilation" or "Compilation completed".
- */
-function reportWatchStatusChanged(diagnostic: ts.Diagnostic) {
-  console.info(ts.formatDiagnostic(diagnostic, formatHost));
 }

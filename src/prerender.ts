@@ -1,3 +1,4 @@
+/* eslint-disable no-await-in-loop */
 import glob from "fast-glob";
 import fetch from "isomorphic-unfetch";
 import { isMainThread, Worker, parentPort } from "worker_threads";
@@ -9,34 +10,31 @@ import createServer from "./server.js";
 import { store, config } from "./cli.js";
 
 // from https://github.com/sveltejs/kit/blob/master/packages/kit/src/core/adapt/prerender.js
-function clean_html(html: string) {
+function cleanHtml(html: string) {
   return html
     .replace(/<!\[CDATA\[[\s\S]*?\]\]>/gm, "")
-    .replace(/(<script[\s\S]*?>)[\s\S]*?<\/script>/gm, "$1</" + "script>")
-    .replace(/(<style[\s\S]*?>)[\s\S]*?<\/style>/gm, "$1</" + "style>")
+    .replace(/(<script[\s\S]*?>)[\s\S]*?<\/script>/gm, "$1</script>")
+    .replace(/(<style[\s\S]*?>)[\s\S]*?<\/style>/gm, "$1</style>")
     .replace(/<!--[\s\S]*?-->/gm, "");
 }
 
-function get_href(attrs: string) {
-  const match =
-    /(?:[\s'"]|^)href\s*=\s*(?:"(\/.*?)"|'(\/.*?)'|(\/[^\s>]*))/.exec(attrs);
+function getHref(attrs: string) {
+  const match = /(?:[\s'"]|^)href\s*=\s*(?:"(\/.*?)"|'(\/.*?)'|(\/[^\s>]*))/.exec(attrs);
   return match && (match[1] || match[2] || match[3]);
 }
 
 export async function prerender() {
   const pages = await glob("pages/**/*.tsx");
-  const apis = await glob(config.apis + "/**/*.ts");
+  const apis = await glob(`${config.apis}/**/*.ts`);
   const urls = pages
     .concat(apis)
     .filter((url) => !url.match(/\[\w+\]/))
-    .map((url) =>
-      url
-        .replace(new RegExp(`^${config.apis}`), `/${config.apis}`)
-        .replace(/^pages/, "")
-        .replace(/\.ts$/, "")
-        .replace(/\.tsx$/, "")
-        .replace(/\/index$/, "/")
-    );
+    .map((url) => url
+      .replace(new RegExp(`^${config.apis}`), `/${config.apis}`)
+      .replace(/^pages/, "")
+      .replace(/\.ts$/, "")
+      .replace(/\.tsx$/, "")
+      .replace(/\/index$/, "/"));
   // start server with rendering mode
   const unresolved = [...urls];
   const resolved = new Set();
@@ -50,7 +48,7 @@ export async function prerender() {
     // request url & get response
     const target = `http://localhost:3000${url}`;
     const response = await fetch(target);
-    if (response.status != 200) {
+    if (response.status !== 200) {
       continue;
     }
 
@@ -60,22 +58,23 @@ export async function prerender() {
       // parse to find more url
       const text = await response.text();
 
-      const cleaned = clean_html(text);
+      const cleaned = cleanHtml(text);
 
-      let match;
       const pattern = /<(a|link|)\s+([\s\S]+?)>/gm;
+      let match = pattern.exec(cleaned);
 
-      while ((match = pattern.exec(cleaned))) {
+      while (match) {
         const attrs = match[2];
-        const href = get_href(attrs);
+        const href = getHref(attrs);
         if (
-          href &&
-          !href.startsWith("/assets/") &&
-          !href.startsWith("/static/")
+          href
+          && !href.startsWith("/assets/")
+          && !href.startsWith("/static/")
         ) {
-          const url = new URL(href, "http://localhost:3000/");
-          unresolved.push(url.pathname);
+          const fullUrl = new URL(href, "http://localhost:3000/");
+          unresolved.push(fullUrl.pathname);
         }
+        match = pattern.exec(cleaned);
       }
     }
 
@@ -91,7 +90,7 @@ async function startServerAndPrerender() {
     esbuild: {
       jsxFactory: "h",
       jsxFragment: "Fragment",
-      jsxInject: `import { h, Fragment } from 'preact'`,
+      jsxInject: "import { h, Fragment } from 'preact'",
     },
     build: {
       cssCodeSplit: false,
@@ -123,7 +122,7 @@ function render() {
 
 if (!isMainThread) {
   prerender().then(() => {
-    if (fs.existsSync('public')) {
+    if (fs.existsSync("public")) {
       fs.copySync("public/", "dist/", {
         overwrite: true,
       });

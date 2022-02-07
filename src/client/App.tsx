@@ -1,5 +1,9 @@
+/* eslint-disable no-restricted-syntax */
+/* eslint-disable react/require-default-props */
 import { ComponentType, FunctionComponent } from "preact";
-import { Route, Switch, useLocation, useRouter } from "wouter-preact";
+import {
+  Route, Switch, useLocation, useRouter,
+} from "wouter-preact";
 import { useEffect, useMemo, useState } from "preact/hooks";
 import Head from "./Head.js";
 import { AsyncPageType } from "./types.js";
@@ -14,36 +18,32 @@ export const ErrorPath = "/error";
 
 export type AppType = ComponentType<AppProps>;
 
-const DefaultErrorPage: FunctionComponent = () => {
-  return (
-    <div>
-      <Head>
-        <title>Error</title>
-      </Head>
-      Error
-    </div>
-  );
-};
+const DefaultErrorPage: FunctionComponent = () => (
+  <div>
+    <Head>
+      <title>Error</title>
+    </Head>
+    Error
+  </div>
+);
 
-const App: FunctionComponent<AppProps> = ({ pages, initial = {} }) => {
+const App: FunctionComponent<AppProps> = ({ pages, initial = {} } : AppProps) => {
   const { matcher } = useRouter();
   const [currentLocation] = useLocation();
   const [renderLocation, setRenderLocation] = useState(currentLocation);
   const [page, setPage] = useState(initial);
   const [loading, setLoading] = useState(false);
-  const ErrorPage = useMemo(() => {
-    return pages.find((page) => page.route == ErrorPath) || null;
-  }, [pages]);
+  const ErrorPage = useMemo(() => pages.find((p) => p.route === ErrorPath) || null, [pages]);
 
   useEffect(() => {
     let matchedParams: unknown | null = null;
     let macthedPage: AsyncPageType | null = ErrorPage;
-    for (const page of pages) {
-      const match = matcher(page.route, currentLocation);
+    for (const p of pages) {
+      const match = matcher(p.route, currentLocation);
       const matched = match[0];
       if (matched) {
-        matchedParams = match[1];
-        macthedPage = page;
+        [matchedParams] = match;
+        macthedPage = p;
         break;
       }
     }
@@ -60,7 +60,7 @@ const App: FunctionComponent<AppProps> = ({ pages, initial = {} }) => {
         const isErrorPage = macthedPage === ErrorPage;
         setPage(isErrorPage ? { error: "Not Found" } : data);
         setRenderLocation((prevRenderLocation) => {
-          if (prevRenderLocation != currentLocation) {
+          if (prevRenderLocation !== currentLocation) {
             window.scrollTo(0, 0);
           }
           return isErrorPage ? ErrorPath : currentLocation;
@@ -75,22 +75,23 @@ const App: FunctionComponent<AppProps> = ({ pages, initial = {} }) => {
   }, [currentLocation, matcher, pages, ErrorPage]);
 
   const location = renderLocation;
+
+  const contextValue = useMemo(() => ({
+    site: {},
+    page,
+    location,
+    loading,
+    setLoading,
+  }), [loading, location, page]);
+
   return (
     <AppContext.Provider
-      value={{
-        site: {},
-        page,
-        location,
-        loading,
-        setLoading: setLoading,
-      }}
+      value={contextValue}
     >
       <Switch location={location}>
         {pages
-          .map((page) => {
-            return <Route path={page.route} component={page} />;
-          })
-          .concat([<Route component={ErrorPage || DefaultErrorPage} />])}
+          .map((p) => <Route key={p.route} path={p.route} component={p as any} />)
+          .concat([<Route key="/error" component={(ErrorPage || DefaultErrorPage) as any} />])}
       </Switch>
     </AppContext.Provider>
   );

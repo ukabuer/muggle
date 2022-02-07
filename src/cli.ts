@@ -16,7 +16,7 @@ function prepare() {
 
   const templatePath = resolve(
     dirname(fileURLToPath(import.meta.url)),
-    "../template.html"
+    "../template.html",
   );
   fs.copyFileSync(templatePath, join(store, "index.html"));
 
@@ -24,14 +24,14 @@ function prepare() {
     join(store, "entry-client-template.js"),
     `import { renderToDOM } from "muggle/client";
      const items = import.meta.glob("../../pages/**/*.tsx");
-     renderToDOM(items);`
+     renderToDOM(items);`,
   );
 
   fs.writeFileSync(
     join(store, "entry-server-template.js"),
     `import { renderToHtml } from "muggle/server";
      const items = import.meta.glob("../../pages/**/*.tsx");
-     export default (url, template) => renderToHtml(url, items, template);`
+     export default (url, template) => renderToHtml(url, items, template);`,
   );
 }
 

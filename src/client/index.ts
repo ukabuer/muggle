@@ -10,4 +10,4 @@ export { Link } from "wouter-preact";
 
 export { default as renderToDOM } from "./entry-client.js";
 
-export { Module } from './types';
+export { Module } from "./types.js";

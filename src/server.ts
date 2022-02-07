@@ -3,7 +3,9 @@ import sirv from "sirv";
 import polka from "polka";
 import glob from "fast-glob";
 import { pathToFileURL } from "url";
-import { resolve, extname, dirname, join } from "path";
+import {
+  resolve, extname, dirname, join,
+} from "path";
 import prefresh from "@prefresh/vite";
 import { createServer as createViteServer, build as viteBuild } from "vite";
 import watchAPI from "./api-watcher.js";
@@ -19,12 +21,14 @@ async function createServer(prerender = false) {
 
   // site api
   const apiDir = config.apis;
-  const apiFiles = await glob(apiDir + "/**/*.ts");
+  const apiFiles = await glob(`${apiDir}/**/*.ts`);
   watchAPI(apiFiles, store);
+  // eslint-disable-next-line no-restricted-syntax
   for (const path of apiFiles) {
-    let route = "/" + path.replace(/.ts$/, "");
+    let route = `/${path.replace(/.ts$/, "")}`;
     const matches = route.match(/\[(\w+)\]/g);
     if (matches && matches.length > 0) {
+      // eslint-disable-next-line no-restricted-syntax
       for (const match of matches) {
         const slug = match.substring(1, match.length - 1);
         route = route.replace(match, `:${slug}`);
@@ -37,7 +41,7 @@ async function createServer(prerender = false) {
       try {
         const lastModified = fs.statSync(script).mtimeMs;
         const importUrl = `${pathToFileURL(
-          script
+          script,
         )}?lastModified=${lastModified}`;
         const handler = await import(importUrl).then((m) => m.get);
         const data = await handler(req);
@@ -49,7 +53,7 @@ async function createServer(prerender = false) {
         res.end(result);
       } catch (e: unknown) {
         console.error(
-          "Failed to excute script `" + script + "`: " + (e as Error).message
+          `Failed to excute script \`${script}\`: ${(e as Error).message}`,
         );
         res.end("404");
         return;
@@ -72,16 +76,14 @@ async function createServer(prerender = false) {
     esbuild: {
       jsxFactory: "h",
       jsxFragment: "Fragment",
-      jsxInject: `import { h, Fragment } from 'preact'`,
+      jsxInject: "import { h, Fragment } from 'preact'",
     },
     build: {
       ssr: join(store, "entry-server-template.js"),
-      watch: prerender
-        ? null
-        : {
-            include: "./**/*",
-            exclude: "./node_modules/**",
-          },
+      watch: prerender ? null : {
+        include: "./**/*",
+        exclude: "./node_modules/**",
+      },
       emptyOutDir: false,
       outDir: store,
       rollupOptions: {
@@ -102,7 +104,7 @@ async function createServer(prerender = false) {
     esbuild: {
       jsxFactory: "h",
       jsxFragment: "Fragment",
-      jsxInject: `import { h, Fragment } from 'preact'`,
+      jsxInject: "import { h, Fragment } from 'preact'",
     },
     build: {
       sourcemap: true,
@@ -140,9 +142,8 @@ async function createServer(prerender = false) {
 
     try {
       const lastModified = fs.statSync(entryServerScript).mtimeMs;
-      const importPath =
-        pathToFileURL(resolve(entryServerScript)).toString() +
-        `?timestep=${lastModified}`;
+      const importPath = `${pathToFileURL(resolve(entryServerScript)).toString()
+      }?timestep=${lastModified}`;
       const renderToHtml = await import(importPath).then((m) => m.default);
       if (!renderToHtml) {
         console.error("Failed to load entry-server");
@@ -171,10 +172,10 @@ async function createServer(prerender = false) {
     }
   });
 
-  return new Promise<typeof app>((resolve) => {
+  return new Promise<typeof app>((resolveFn) => {
     app.listen(3000, () => {
       console.log("> Running on localhost:3000");
-      resolve(app);
+      resolveFn(app);
     });
   });
 }

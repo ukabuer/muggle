@@ -2,15 +2,19 @@ import { h } from "preact";
 import { Router } from "wouter-preact";
 import renderToString from "preact-render-to-string";
 import staticLocationHook from "wouter-preact/static-location";
-import { Head, createAsyncPage, App, Module, ErrorPath } from "./client/index.js";
 import fetch from "isomorphic-unfetch";
+import {
+  Head, createAsyncPage, App, Module, ErrorPath,
+} from "./client/index.js";
+import { AsyncPageType } from "./client/types.js";
 
-export async function renderToHtml(
+async function renderToHtml(
   url: string,
   items: Record<string, () => Promise<Module>>,
-  template: string
+  template: string,
 ): Promise<string> {
   if (!url.endsWith("/")) {
+    // eslint-disable-next-line no-param-reassign
     url += "/";
   }
 
@@ -22,26 +26,23 @@ export async function renderToHtml(
       .replace("../../pages", "");
     files[route] = items[filePath];
   });
-  const pages = Object.entries(files).map(([file, loader]) => {
-    return createAsyncPage(file, loader, (url) =>
-      fetch("http://localhost:3000" + url)
-    );
-  });
+  const pages = Object.entries(files).map(([file, loader]) => createAsyncPage(file, loader, (route) => fetch(`http://localhost:3000${route}`))) as AsyncPageType<unknown>[];
 
   let data: unknown = null;
-  let page = pages.find((page) => page.Match(url)[0]);
-  if (!page) {
+  let matchedPage = pages.find((page) => page.Match(url)[0]);
+  if (!matchedPage) {
+    // eslint-disable-next-line no-param-reassign
     url = ErrorPath;
-    page = pages.find((page) => page.Match(ErrorPath)[0]);
+    matchedPage = pages.find((page) => page.Match(ErrorPath)[0]);
     data = { error: "Not Found" };
   }
 
-  if (page) {
+  if (matchedPage) {
     try {
       if (!data) {
-        data = await page.Load(page.Match(url)[1]);
+        data = await matchedPage.Load(matchedPage.Match(url)[1]);
       } else {
-        await page.LoadComponent();
+        await matchedPage.LoadComponent();
       }
     } catch (err: unknown) {
       data = { error: (err && (err as Error).message) || "unknown" };
@@ -52,7 +53,7 @@ export async function renderToHtml(
     h(Router, {
       hook: staticLocationHook(url),
       children: [h(App, { pages, initial: data })],
-    })
+    }),
   );
   const head = Head.rewind()
     .map((n) => renderToString(n))
@@ -60,11 +61,15 @@ export async function renderToHtml(
 
   let html = template.replace(
     "<!-- @HEAD@ -->",
-    head +
-      `<script>window.__PRELOAD_DATA__ = ${JSON.stringify(
-        data || {}
-      )};</script>`.trim()
+    head
+      + `<script>window.__PRELOAD_DATA__ = ${JSON.stringify(
+        data || {},
+      )};</script>`.trim(),
   );
-  html = html.replace(`<!-- @APP@ -->`, app);
+  html = html.replace("<!-- @APP@ -->", app);
   return html;
 }
+
+export { renderToHtml };
+
+export default renderToHtml;
