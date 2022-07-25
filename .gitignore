@@ -10,3 +10,4 @@ src/*.map
 client/*.js
 client/*.d.ts
 client/*.map
+build
