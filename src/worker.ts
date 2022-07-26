@@ -19,7 +19,7 @@ async function collect(rootDir: string, test: (_: string) => boolean) {
       const path = resolve(dir, item);
       const substat = await fs.stat(path);
       if (substat.isDirectory()) {
-        traversal(path);
+        await traversal(path);
       } else if (test(path)) {
         files.push(path);
       }
@@ -71,7 +71,7 @@ async function dev() {
   nameToImport = "";
   pageFiles.forEach((file, i) => {
     MUGGLE_PAGES += `import $${i} from "${file.path}";\n`;
-    nameToImport += `\n${file.name}: $${i},`;
+    nameToImport += `\n"${file.path}": $${i},`;
   });
   MUGGLE_PAGES += `export default {${nameToImport}\n};`;
 
