@@ -29,6 +29,16 @@ async function start() {
     route = relative("./test/pages", route).replaceAll("\\", "/");
     route = `/${route}`;
     if (route.endsWith("index")) route = route.substring(0, route.length - "index".length);
+
+    const matches = route.match(/\[(\w+)\]/g);
+    if (matches && matches.length > 0) {
+      // eslint-disable-next-line no-restricted-syntax
+      for (const match of matches) {
+        const slug = match.substring(1, match.length - 1);
+        route = route.replace(match, `:${slug}`);
+      }
+    }
+
     routes[route] = page as ComponentType;
   });
   console.log("routes", Object.keys(routes));
