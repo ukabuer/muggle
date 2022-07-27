@@ -87,10 +87,7 @@ function reducer(components: Component["props"][]): AnyVNode[] {
     .reverse()
     .filter(unique())
     .reverse()
-    .map((c) => {
-      const className = `${c.props.className ? `${c.props.className} ` : ""}preact-head`;
-      return cloneElement(c, { className });
-    });
+    .map((c) => cloneElement(c));
 }
 
 function domify(component: AnyVNode) {

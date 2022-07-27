@@ -26,20 +26,11 @@ const Scripts: FunctionComponent = () => (
 
 // eslint-disable-next-line react/prop-types
 const Layout: FunctionComponent<Page> = ({ title, children }) => (
-  <html lang="en">
-    <head>
-      <title>{title}</title>
-      <meta charSet="UTF-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    </head>
-    <body data-barba="wrapper">
-      <main data-barba="container" data-barba-namespace="home">
-        {children}
-        <Scripts />
-      </main>
-      <script src="/client.js" />
-    </body>
-  </html>
+  <main data-barba="container" data-barba-namespace="home">
+    {children}
+    <Scripts />
+    <script src="/client.js" />
+  </main>
 );
 
 export default Layout;

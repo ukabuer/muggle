@@ -114,7 +114,10 @@ async function dev() {
         virtual({
           MUGGLE_COMPONENTS,
           MUGGLE_PAGES,
-          MUGGLE_APP: "export { default as AllComponents } from \"MUGGLE_COMPONENTS\";export { default as AllPages } from \"MUGGLE_PAGES\";",
+          MUGGLE_APP: `
+            export { default as AllComponents } from "MUGGLE_COMPONENTS";
+            export { default as AllPages } from "MUGGLE_PAGES";
+            export { default as Head } from './src/client/Head';`,
         }),
         sucrase({
           exclude: ["node_modules/**"],

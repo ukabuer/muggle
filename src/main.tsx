@@ -4,7 +4,7 @@ import sirv from "sirv";
 import polka from "polka";
 import fs from "fs/promises";
 import {
-  ComponentType, h, Fragment, options,
+  ComponentType, h, Fragment, options, VNode,
 } from "preact";
 import renderToString from "preact-render-to-string";
 // eslint-disable-next-line import/extensions
@@ -12,9 +12,13 @@ import Layout, { PROPS, reset } from "./Layout";
 
 const worker = new Worker("./build/worker.js");
 
+function createHTML(lang: string, head: string, body: string) {
+  return `<!DOCTYPE html><html lang="${lang}"><head>${head}</head><body data-barba="wrapper">${body}</body></html>`;
+}
 async function start() {
   const script = resolve("./build/MUGGLE_APP.js");
   const pages = await import(script).then((m) => m.AllPages);
+  const Head = await import(script).then((m) => m.Head);
 
   const app = polka();
 
@@ -47,11 +51,16 @@ async function start() {
     app.get(route, async (req, res) => {
       reset();
       const Content = page as ComponentType;
-      const html = `<!DOCTYPE html>${renderToString(
+
+      const body = renderToString(
         <Layout title={route}>
           <Content />
         </Layout>,
-      )}`;
+      );
+      const head = Head.rewind()
+        .map((n: VNode) => renderToString(n))
+        .join("");
+      const html = createHTML("en", head, body);
       res.writeHead(200, { "Content-Type": "text/html" });
       res.end(html);
     });
