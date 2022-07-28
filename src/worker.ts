@@ -70,7 +70,7 @@ async function dev() {
   let MUGGLE_PAGES = "";
   nameToImport = "";
   pageFiles.forEach((file, i) => {
-    MUGGLE_PAGES += `import $${i} from "${file.path}";\n`;
+    MUGGLE_PAGES += `import * as $${i} from "${file.path}";\n`;
     nameToImport += `\n"${file.path}": $${i},`;
   });
   MUGGLE_PAGES += `export default {${nameToImport}\n};`;

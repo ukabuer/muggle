@@ -15,9 +15,15 @@ const worker = new Worker("./build/worker.js");
 function createHTML(lang: string, head: string, body: string) {
   return `<!DOCTYPE html><html lang="${lang}"><head>${head}</head><body data-barba="wrapper">${body}</body></html>`;
 }
+
+type PageModule = {
+  default: ComponentType<{ page?: unknown}>,
+  preload?: () => Promise<unknown>;
+}
+
 async function start() {
   const script = resolve("./build/MUGGLE_APP.js");
-  const pages = await import(script).then((m) => m.AllPages);
+  const pages = await import(script).then((m) => m.AllPages as PageModule[]);
   const Head = await import(script).then((m) => m.Head);
 
   const app = polka();
@@ -26,7 +32,7 @@ async function start() {
     app.use(sirv("public"));
   }
 
-  const routes: Record<string, ComponentType> = {};
+  const routes: Record<string, PageModule> = {};
   Object.entries(pages).forEach(([path, page]) => {
     const info = parse(path);
     let route = path.substring(0, path.length - info.ext.length);
@@ -43,18 +49,22 @@ async function start() {
       }
     }
 
-    routes[route] = page as ComponentType;
+    routes[route] = page;
   });
   console.log("routes", Object.keys(routes));
 
   Object.entries(routes).forEach(([route, page]) => {
     app.get(route, async (req, res) => {
       reset();
-      const Content = page as ComponentType;
+      let props: unknown | undefined;
+      if (page.preload) {
+        props = await page.preload();
+      }
+      const Content = page.default;
 
       const body = renderToString(
         <Layout title={route}>
-          <Content />
+          <Content page={props} />
         </Layout>,
       );
       const head = Head.rewind()
@@ -66,7 +76,7 @@ async function start() {
     });
   });
 
-  const islands = await import(script).then((m) => m.AllComponents);
+  const islands = await import(script).then((m) => m.AllComponents as ComponentType[]);
   const originalHook = options.vnode;
   let ignoreNext = false;
   options.vnode = (vnode) => {
