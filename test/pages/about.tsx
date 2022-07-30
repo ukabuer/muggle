@@ -1,5 +1,5 @@
 import { h, FunctionComponent } from "preact";
-import Head from "../../src/client/Head";
+import Head from "muggle/client";
 
 const AboutPage: FunctionComponent = () => (
   <div>

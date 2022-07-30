@@ -3,10 +3,10 @@ import nodeResolve from "@rollup/plugin-node-resolve";
 
 export default [
   {
-    input: "src/main.tsx",
+    input: "src/cli.ts",
     output: [
       {
-        dir: "build/",
+        dir: "dist/",
         format: "cjs",
       },
     ],
@@ -27,7 +27,7 @@ export default [
     input: "src/worker.ts",
     output: [
       {
-        dir: "build/",
+        dir: "dist/",
         format: "cjs",
       },
     ],
@@ -43,5 +43,27 @@ export default [
     ],
     context: "this",
     preserveEntrySignatures: false,
+  },
+  {
+    input: "src/client/Head.tsx",
+    output: [
+      {
+        dir: "dist/client/",
+        format: "es",
+        name: "index.js",
+      },
+    ],
+    external: [/node_modules/],
+    plugins: [
+      sucrase({
+        exclude: ["node_modules/**"],
+        transforms: ["jsx", "typescript"],
+        jsxPragma: "h",
+        jsxFragmentPragma: "Fragment",
+      }),
+      nodeResolve(),
+    ],
+    context: "this",
+    preserveEntrySignatures: "strict",
   },
 ];

@@ -1,8 +1,5 @@
-import {
-  h, Fragment, FunctionComponent, ComponentChildren,
-} from "preact";
+import { h, FunctionComponent, ComponentChildren } from "preact";
 
-// eslint-disable-next-line import/no-mutable-exports
 export let PROPS: unknown[] = [];
 
 export function reset() {
@@ -11,13 +8,13 @@ export function reset() {
 
 type Page = {
   children: ComponentChildren;
-  title: string;
 };
 
 const Scripts: FunctionComponent = () => (
   <script
     id="__MUGGLE_ISLAND_PROPS"
     type="application/json"
+    // eslint-disable-next-line react/no-danger
     dangerouslySetInnerHTML={{
       __html: JSON.stringify(PROPS),
     }}
@@ -25,7 +22,7 @@ const Scripts: FunctionComponent = () => (
 );
 
 // eslint-disable-next-line react/prop-types
-const Layout: FunctionComponent<Page> = ({ title, children }) => (
+const Layout: FunctionComponent<Page> = ({ children }) => (
   <main data-barba="container" data-barba-namespace="home">
     {children}
     <Scripts />

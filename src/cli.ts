@@ -2,8 +2,9 @@ import cac from "cac";
 import { resolve, dirname, join } from "path";
 import { fileURLToPath } from "url";
 import fs from "fs-extra";
-import createServer from "./server.js";
+// import createServer from "./server.js";
 import render from "./prerender.js";
+import { startServer, startCompile } from "./main";
 
 export const store = "dist/.tmp/";
 
@@ -16,7 +17,7 @@ function prepare() {
 
   const templatePath = resolve(
     dirname(fileURLToPath(import.meta.url)),
-    "../template.html",
+    "../template.html"
   );
   fs.copyFileSync(templatePath, join(store, "index.html"));
 
@@ -24,14 +25,14 @@ function prepare() {
     join(store, "entry-client-template.js"),
     `import { renderToDOM } from "muggle/client";
      const items = import.meta.glob("../../pages/**/*.tsx");
-     renderToDOM(items);`,
+     renderToDOM(items);`
   );
 
   fs.writeFileSync(
     join(store, "entry-server-template.js"),
     `import { renderToHtml } from "muggle/server";
      const items = import.meta.glob("../../pages/**/*.tsx");
-     export default (url, template) => renderToHtml(url, items, template);`,
+     export default (url, template) => renderToHtml(url, items, template);`
   );
 }
 
@@ -55,8 +56,10 @@ mergeConfig();
 const cli = cac();
 
 cli.command("serve").action(() => {
-  prepare();
-  createServer();
+  startCompile();
+  setTimeout(() => {
+    startServer();
+  }, 1000);
 });
 
 cli.command("build").action(() => {

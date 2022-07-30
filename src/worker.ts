@@ -35,8 +35,8 @@ async function collect(rootDir: string, test: (_: string) => boolean) {
 async function dev() {
   const files = await (
     await collect(
-      "test/islands",
-      (file) => file.endsWith(".jsx") || file.endsWith(".tsx"),
+      "islands",
+      (file) => file.endsWith(".jsx") || file.endsWith(".tsx")
     )
   ).map((file) => {
     const info = parse(file);
@@ -56,8 +56,8 @@ async function dev() {
 
   const pageFiles = await (
     await collect(
-      "test/pages",
-      (file) => file.endsWith(".jsx") || file.endsWith(".tsx"),
+      "pages",
+      (file) => file.endsWith(".jsx") || file.endsWith(".tsx")
     )
   ).map((file) => {
     const info = parse(file);
@@ -106,7 +106,7 @@ async function dev() {
       output: [
         {
           format: "cjs",
-          file: "build/MUGGLE_APP.js",
+          file: "dist/MUGGLE_APP.js",
         },
       ],
       external: [/node_modules/],
@@ -117,7 +117,7 @@ async function dev() {
           MUGGLE_APP: `
             export { default as AllComponents } from "MUGGLE_COMPONENTS";
             export { default as AllPages } from "MUGGLE_PAGES";
-            export { default as Head } from './src/client/Head';`,
+            export { default as Head } from "muggle/client";`,
         }),
         sucrase({
           exclude: ["node_modules/**"],
@@ -129,7 +129,8 @@ async function dev() {
       ],
       context: "this",
       preserveEntrySignatures: "strict",
-    }]);
+    },
+  ]);
   watcher.on("event", (event) => {
     if (event.code === "ERROR") {
       console.log(event.error.message);

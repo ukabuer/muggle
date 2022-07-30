@@ -1,11 +1,10 @@
 import { h, FunctionComponent } from "preact";
-import Head from "../../src/client/Head";
-
+import Head from "muggle/client";
 import Counter from "../islands/Counter";
 
 type Props = {
   page: string;
-}
+};
 
 const IndexPage: FunctionComponent<Props> = ({ page }: Props) => (
   <div>

@@ -3,46 +3,56 @@ import { relative, resolve, parse } from "path";
 import sirv from "sirv";
 import polka from "polka";
 import fs from "fs/promises";
-import {
-  ComponentType, h, Fragment, options, VNode,
-} from "preact";
+import { ComponentType, h, Fragment, options, VNode } from "preact";
 import renderToString from "preact-render-to-string";
-// eslint-disable-next-line import/extensions
 import Layout, { PROPS, reset } from "./Layout";
 
-const worker = new Worker("./build/worker.js");
+export function startCompile() {
+  const script = resolve(__dirname, "./worker");
+  const compiler = new Worker(script);
+  compiler.addListener("error", (err) => {
+    console.error(err.message);
+  });
+  return compiler;
+}
 
 function createHTML(lang: string, head: string, body: string) {
   return `<!DOCTYPE html><html lang="${lang}"><head>${head}</head><body data-barba="wrapper">${body}</body></html>`;
 }
 
 type PageModule = {
-  default: ComponentType<{ page?: unknown}>,
+  default: ComponentType<{ page?: unknown }>;
   preload?: () => Promise<unknown>;
-}
+};
 
-async function start() {
-  const script = resolve("./build/MUGGLE_APP.js");
-  const pages = await import(script).then((m) => m.AllPages as PageModule[]);
-  const Head = await import(script).then((m) => m.Head);
-
+export async function startServer() {
   const app = polka();
 
   if (await fs.stat("public")) {
     app.use(sirv("public"));
   }
 
+  const script = resolve("./dist/MUGGLE_APP.js");
+  const [pages, islands, Head] = await import(script).then(
+    (m) =>
+      [m.AllPages, m.AllComponents, m.Head] as [
+        PageModule[],
+        ComponentType[],
+        any
+      ]
+  );
+
   const routes: Record<string, PageModule> = {};
   Object.entries(pages).forEach(([path, page]) => {
     const info = parse(path);
     let route = path.substring(0, path.length - info.ext.length);
-    route = relative("./test/pages", route).replaceAll("\\", "/");
+    route = relative("pages", route).replaceAll("\\", "/");
     route = `/${route}`;
-    if (route.endsWith("index")) route = route.substring(0, route.length - "index".length);
+    if (route.endsWith("index"))
+      route = route.substring(0, route.length - "index".length);
 
     const matches = route.match(/\[(\w+)\]/g);
     if (matches && matches.length > 0) {
-      // eslint-disable-next-line no-restricted-syntax
       for (const match of matches) {
         const slug = match.substring(1, match.length - 1);
         route = route.replace(match, `:${slug}`);
@@ -63,9 +73,9 @@ async function start() {
       const Content = page.default;
 
       const body = renderToString(
-        <Layout title={route}>
+        <Layout>
           <Content page={props} />
-        </Layout>,
+        </Layout>
       );
       const head = Head.rewind()
         .map((n: VNode) => renderToString(n))
@@ -76,21 +86,19 @@ async function start() {
     });
   });
 
-  const islands = await import(script).then((m) => m.AllComponents as ComponentType[]);
   const originalHook = options.vnode;
   let ignoreNext = false;
   options.vnode = (vnode) => {
     const OriginalType = vnode.type as ComponentType<unknown>;
     if (typeof vnode.type === "function") {
       const island = Object.entries(islands).find(
-        ([_, component]) => component === OriginalType,
+        ([, component]) => component === OriginalType
       );
       if (island) {
         if (ignoreNext) {
           ignoreNext = false;
           return;
         }
-        // eslint-disable-next-line no-param-reassign
         vnode.type = (props) => {
           ignoreNext = true;
           PROPS.push(props);
@@ -100,7 +108,6 @@ async function start() {
                 data-muggle-id={PROPS.length - 1}
                 data-muggle-component={island[0]}
               />
-              {/* eslint-disable-next-line react/jsx-props-no-spreading */}
               <OriginalType {...props} />
               <script data-muggle-end-id={PROPS.length - 1} />
             </>
@@ -115,7 +122,3 @@ async function start() {
     console.log("> Running on localhost:3000");
   });
 }
-
-setTimeout(() => {
-  start();
-}, 1000);
