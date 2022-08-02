@@ -10,7 +10,7 @@ import createServer from "./server.js";
 import { store, config } from "./cli.js";
 
 // from https://github.com/sveltejs/kit/blob/master/packages/kit/src/core/adapt/prerender.js
-function cleanHtml(html: string) {
+export function cleanHtml(html: string) {
   return html
     .replace(/<!\[CDATA\[[\s\S]*?\]\]>/gm, "")
     .replace(/(<script[\s\S]*?>)[\s\S]*?<\/script>/gm, "$1</script>")
@@ -18,8 +18,9 @@ function cleanHtml(html: string) {
     .replace(/<!--[\s\S]*?-->/gm, "");
 }
 
-function getHref(attrs: string) {
-  const match = /(?:[\s'"]|^)href\s*=\s*(?:"(\/.*?)"|'(\/.*?)'|(\/[^\s>]*))/.exec(attrs);
+export function getHref(attrs: string) {
+  const match =
+    /(?:[\s'"]|^)href\s*=\s*(?:"(\/.*?)"|'(\/.*?)'|(\/[^\s>]*))/.exec(attrs);
   return match && (match[1] || match[2] || match[3]);
 }
 
@@ -29,12 +30,14 @@ export async function prerender() {
   const urls = pages
     .concat(apis)
     .filter((url) => !url.match(/\[\w+\]/))
-    .map((url) => url
-      .replace(new RegExp(`^${config.apis}`), `/${config.apis}`)
-      .replace(/^pages/, "")
-      .replace(/\.ts$/, "")
-      .replace(/\.tsx$/, "")
-      .replace(/\/index$/, "/"));
+    .map((url) =>
+      url
+        .replace(new RegExp(`^${config.apis}`), `/${config.apis}`)
+        .replace(/^pages/, "")
+        .replace(/\.ts$/, "")
+        .replace(/\.tsx$/, "")
+        .replace(/\/index$/, "/")
+    );
   // start server with rendering mode
   const unresolved = [...urls];
   const resolved = new Set();
@@ -67,9 +70,9 @@ export async function prerender() {
         const attrs = match[2];
         const href = getHref(attrs);
         if (
-          href
-          && !href.startsWith("/assets/")
-          && !href.startsWith("/static/")
+          href &&
+          !href.startsWith("/assets/") &&
+          !href.startsWith("/static/")
         ) {
           const fullUrl = new URL(href, "http://localhost:3000/");
           unresolved.push(fullUrl.pathname);
@@ -120,15 +123,15 @@ function render() {
   startServerAndPrerender();
 }
 
-if (!isMainThread) {
-  prerender().then(() => {
-    if (fs.existsSync("public")) {
-      fs.copySync("public/", "dist/", {
-        overwrite: true,
-      });
-    }
-    parentPort?.postMessage(null);
-  });
-}
+// if (!isMainThread) {
+//   prerender().then(() => {
+//     if (fs.existsSync("public")) {
+//       fs.copySync("public/", "dist/", {
+//         overwrite: true,
+//       });
+//     }
+//     parentPort?.postMessage(null);
+//   });
+// }
 
 export default render;

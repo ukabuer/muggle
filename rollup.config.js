@@ -45,6 +45,27 @@ export default [
     preserveEntrySignatures: false,
   },
   {
+    input: "src/export.ts",
+    output: [
+      {
+        dir: "dist/",
+        format: "cjs",
+      },
+    ],
+    external: [/node_modules/],
+    plugins: [
+      sucrase({
+        exclude: ["node_modules/**"],
+        transforms: ["jsx", "typescript"],
+        jsxPragma: "h",
+        jsxFragmentPragma: "Fragment",
+      }),
+      nodeResolve(),
+    ],
+    context: "this",
+    preserveEntrySignatures: false,
+  },
+  {
     input: "src/client/Head.tsx",
     output: [
       {

@@ -11,6 +11,20 @@ const IndexPage: FunctionComponent<Props> = ({ page }: Props) => (
     <Head>
       <title>Index Page</title>
     </Head>
+    <ul>
+      <li>
+        <a href="/">Index</a>
+      </li>
+      <li>
+        <a href="/about/">About</a>
+      </li>
+      <li>
+        <a href="/blog/1/">Post 1</a>
+      </li>
+      <li>
+        <a href="/blog/2/">Post 2</a>
+      </li>
+    </ul>
     <h1>Index Page</h1>
     <p>{page}</p>
     <Counter initial={100} />

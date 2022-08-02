@@ -3,8 +3,7 @@ import { resolve, dirname, join } from "path";
 import { fileURLToPath } from "url";
 import fs from "fs-extra";
 // import createServer from "./server.js";
-import render from "./prerender.js";
-import { startServer, startCompile } from "./main";
+import { startServer, startCompile, startExport } from "./main";
 
 export const store = "dist/.tmp/";
 
@@ -64,8 +63,11 @@ cli.command("serve").action(() => {
 
 cli.command("build").action(() => {
   fs.rmSync("dist", { force: true, recursive: true });
-  prepare();
-  render();
+  startCompile();
+  setTimeout(() => {
+    startServer(true);
+    startExport();
+  }, 1000);
 });
 
 cli.parse();

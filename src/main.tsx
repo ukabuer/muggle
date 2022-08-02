@@ -1,5 +1,5 @@
 import { Worker } from "worker_threads";
-import { relative, resolve, parse } from "path";
+import { relative, resolve, parse, dirname } from "path";
 import sirv from "sirv";
 import polka from "polka";
 import fs from "fs/promises";
@@ -16,32 +16,27 @@ export function startCompile() {
   return compiler;
 }
 
-function createHTML(lang: string, head: string, body: string) {
+export function startExport() {
+  const script = resolve(__dirname, "./export");
+  const requestor = new Worker(script);
+  requestor.addListener("error", (err) => {
+    console.error(err.message);
+  });
+  return requestor;
+}
+
+export function createHTML(lang: string, head: string, body: string) {
   return `<!DOCTYPE html><html lang="${lang}"><head>${head}</head><body data-barba="wrapper">${body}</body></html>`;
 }
 
-type PageModule = {
+export type PageModule = {
   default: ComponentType<{ page?: unknown }>;
   preload?: () => Promise<unknown>;
 };
 
-export async function startServer() {
-  const app = polka();
-
-  if (await fs.stat("public")) {
-    app.use(sirv("public"));
-  }
-
-  const script = resolve("./dist/MUGGLE_APP.js");
-  const [pages, islands, Head] = await import(script).then(
-    (m) =>
-      [m.AllPages, m.AllComponents, m.Head] as [
-        PageModule[],
-        ComponentType[],
-        any
-      ]
-  );
-
+export function processPages(
+  pages: Record<string, PageModule>
+): Record<string, PageModule> {
   const routes: Record<string, PageModule> = {};
   Object.entries(pages).forEach(([path, page]) => {
     const info = parse(path);
@@ -50,6 +45,7 @@ export async function startServer() {
     route = `/${route}`;
     if (route.endsWith("index"))
       route = route.substring(0, route.length - "index".length);
+    if (!route.endsWith("/")) route += "/";
 
     const matches = route.match(/\[(\w+)\]/g);
     if (matches && matches.length > 0) {
@@ -61,28 +57,71 @@ export async function startServer() {
 
     routes[route] = page;
   });
+  return routes;
+}
+
+async function renderPage(page: PageModule, Head: any) {
+  reset();
+  let props: unknown | undefined;
+  if (page.preload) {
+    props = await page.preload();
+  }
+  const Content = page.default;
+
+  const body = renderToString(
+    <Layout>
+      <Content page={props} />
+    </Layout>
+  );
+  const head = Head.rewind()
+    .map((n: VNode) => renderToString(n))
+    .join("");
+  const html = createHTML("en", head, body);
+  return html;
+}
+
+export async function startServer(exportHTML?: boolean) {
+  if (exportHTML) {
+    await fs.mkdir("dist", { recursive: true });
+  }
+
+  const app = polka();
+
+  if (await fs.stat("public")) {
+    app.use(sirv("public"));
+  }
+
+  const script = resolve("./dist/MUGGLE_APP.js");
+  const [pages, islands, Head] = await import(script).then(
+    (m) =>
+      [m.AllPages, m.AllComponents, m.Head] as [
+        Record<string, PageModule>,
+        ComponentType[],
+        any
+      ]
+  );
+
+  const routes = processPages(pages);
   console.log("routes", Object.keys(routes));
 
   Object.entries(routes).forEach(([route, page]) => {
     app.get(route, async (req, res) => {
-      reset();
-      let props: unknown | undefined;
-      if (page.preload) {
-        props = await page.preload();
-      }
-      const Content = page.default;
-
-      const body = renderToString(
-        <Layout>
-          <Content page={props} />
-        </Layout>
-      );
-      const head = Head.rewind()
-        .map((n: VNode) => renderToString(n))
-        .join("");
-      const html = createHTML("en", head, body);
+      const html = await renderPage(page, Head);
       res.writeHead(200, { "Content-Type": "text/html" });
       res.end(html);
+
+      if (exportHTML) {
+        const url = req.url;
+        const target = `dist${url}`;
+        const file = url.endsWith("/")
+          ? `${target}index.html`
+          : `${target}.html`;
+
+        const dir = dirname(file);
+        await fs.mkdir(dir, { recursive: true });
+        await fs.writeFile(file, html);
+        console.log("HTML exported:", req.url);
+      }
     });
   });
 
