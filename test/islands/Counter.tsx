@@ -5,7 +5,7 @@ type Props = {
   initial: number;
 };
 
-const Counter: FunctionComponent<Props> = (props) => {
+const Counter: FunctionComponent<Props> = (props: Props) => {
   const [value, setValue] = useState(props.initial);
   return (
     <>

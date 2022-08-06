@@ -3,11 +3,11 @@ import nodeResolve from "@rollup/plugin-node-resolve";
 
 export default [
   {
-    input: "src/cli.ts",
+    input: "src/cli/index.ts",
     output: [
       {
-        dir: "dist/",
         format: "cjs",
+        file: "dist/cli.js",
       },
     ],
     external: [/node_modules/],
@@ -24,7 +24,7 @@ export default [
     preserveEntrySignatures: false,
   },
   {
-    input: "src/worker.ts",
+    input: "src/compile.ts",
     output: [
       {
         dir: "dist/",

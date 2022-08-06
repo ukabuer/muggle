@@ -11,7 +11,11 @@ interface ContextType {
 }
 
 const AppContext = createContext<ContextType>({
-  site: {}, page: {}, location: "", loading: false, setLoading: () => 0,
+  site: {},
+  page: {},
+  location: "",
+  loading: false,
+  setLoading: () => 0,
 });
 
 export default AppContext;

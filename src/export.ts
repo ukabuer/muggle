@@ -1,6 +1,5 @@
 import { resolve } from "path";
 import { PageModule, processPages } from "./main";
-import fs from "fs/promises";
 import fse from "fs-extra";
 import http from "http";
 import { cleanHtml, getHref } from "./prerender";

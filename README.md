@@ -1,10 +1,11 @@
 ## TODO
 
 - [x] Export to HTML
-- [ ] Remove useless files & add CI
+- [x] Remove useless files & add CI
 - [ ] Test on jsx/tsx project
 - [ ] Rewrite Head for server
-- [ ] Builin pjax
+- [ ] Export connect middleware
+- [ ] Builin PJAX
 
 ## Muggle
 

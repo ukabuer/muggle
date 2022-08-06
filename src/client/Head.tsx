@@ -1,6 +1,6 @@
 import { Component, cloneElement, VNode, ComponentChildren } from "preact";
 
-type AnyVNode = VNode<any>;
+type AnyVNode = VNode<any>; // eslint-disable-line
 
 const DOMAttributeNames: Record<string, string> = {
   acceptCharset: "accept-charset",

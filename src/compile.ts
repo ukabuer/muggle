@@ -77,7 +77,7 @@ async function dev() {
 
   const watcher = rollup.watch([
     {
-      input: resolve(__dirname, "../src/client.tsx"),
+      input: resolve(__dirname, "../src/entry-client.tsx"),
       output: [
         {
           dir: "public/",

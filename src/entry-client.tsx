@@ -62,7 +62,7 @@ function hydratePage() {
         parent.removeChild(c);
       },
     };
-    // eslint-disable-next-line react/jsx-props-no-spreading
+    // eslint-disable-next-line
     hydrate(<HComponent {...props} />, fakeRoot as any);
 
     parent.removeChild(script);
