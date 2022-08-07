@@ -8,13 +8,17 @@ import renderToString from "preact-render-to-string";
 import Layout, { PROPS, reset } from "./Layout";
 import type Head from "./client/Head";
 
-export function startCompile() {
+export async function startCompile() {
   const script = resolve(__dirname, "./compile");
   const compiler = new Worker(script);
-  compiler.addListener("error", (err) => {
-    console.error(err.message);
+  return new Promise((resolve, reject) => {
+    compiler.addListener("message", () => {
+      resolve(compiler);
+    });
+    compiler.addListener("error", (err) => {
+      reject(err);
+    });
   });
-  return compiler;
 }
 
 export function startExport() {

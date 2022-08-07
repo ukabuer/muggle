@@ -1,13 +1,11 @@
 import fs from "fs-extra";
 import { startServer, startCompile, startExport } from "../main";
 
-function exports() {
+async function exportHTML() {
   fs.rmSync("dist", { force: true, recursive: true });
-  startCompile();
-  setTimeout(() => {
-    startServer(true);
-    startExport();
-  }, 1000);
+  await startCompile();
+  startServer(true);
+  startExport();
 }
 
-export default exports;
+export default exportHTML;

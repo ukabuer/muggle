@@ -5,6 +5,7 @@ import common from "@rollup/plugin-commonjs";
 import sucrase from "@rollup/plugin-sucrase";
 import virtual from "@rollup/plugin-virtual";
 import { relative, parse, resolve } from "path";
+import { isMainThread, parentPort } from "worker_threads";
 
 async function collect(rootDir: string, test: (_: string) => boolean) {
   const files: string[] = [];
@@ -138,7 +139,10 @@ async function dev() {
   });
 }
 
-dev();
+if (!isMainThread) {
+  dev();
+  parentPort?.postMessage(true);
+}
 
 export default dev;
 

@@ -1,7 +1,7 @@
 import cac from "cac";
 import fs from "fs-extra";
 import dev from "./dev";
-import exports from "./export";
+import exportHTML from "./export";
 
 export const store = "dist/.tmp/";
 
@@ -30,6 +30,6 @@ const cli = cac();
 
 cli.command("serve").action(dev);
 
-cli.command("build").action(exports);
+cli.command("build").action(exportHTML);
 
 cli.parse();
