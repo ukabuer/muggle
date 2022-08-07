@@ -3,7 +3,6 @@
   "version": "0.8.8",
   "description": "",
   "main": "dist/index.js",
-  "module": "dist/index.js",
   "bin": {
     "muggle": "bin/muggle.js"
   },
@@ -19,8 +18,8 @@
     }
   },
   "scripts": {
-    "build": "rollup -c",
-    "dev": "rollup -c -w",
+    "build": "tsc",
+    "dev": "tsc -w",
     "test": "eslint . --max-warnings=0 && prettier --check ."
   },
   "keywords": [],

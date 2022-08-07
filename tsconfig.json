@@ -1,13 +1,15 @@
 {
-  "include": ["."],
+  "include": ["src"],
   "exclude": ["node_modules", "build", "dist"],
   "compilerOptions": {
-    "target": "es2020",
+    "outDir": "dist",
+    "target": "ESNext",
     "lib": ["esnext"],
-    "module": "es2020",
+    "module": "CommonJS",
     "moduleResolution": "node",
     "noImplicitOverride": true,
     "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
     "jsx": "react",
     "jsxFactory": "h",
     "jsxFragmentFactory": "Fragment",

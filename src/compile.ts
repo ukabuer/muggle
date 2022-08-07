@@ -1,5 +1,5 @@
 import fs from "fs/promises";
-import rollup from "rollup";
+import { watch } from "rollup";
 import nodeResolve from "@rollup/plugin-node-resolve";
 import common from "@rollup/plugin-commonjs";
 import sucrase from "@rollup/plugin-sucrase";
@@ -76,7 +76,7 @@ async function dev() {
   });
   MUGGLE_PAGES += `export default {${nameToImport}\n};`;
 
-  const watcher = rollup.watch([
+  const watcher = watch([
     {
       input: resolve(__dirname, "../src/entry-client.tsx"),
       output: [
@@ -110,15 +110,14 @@ async function dev() {
           file: "dist/MUGGLE_APP.js",
         },
       ],
-      external: [/node_modules/],
+      external: [/node_modules/, "muggle/client"],
       plugins: [
         virtual({
           MUGGLE_COMPONENTS,
           MUGGLE_PAGES,
           MUGGLE_APP: `
             export { default as AllComponents } from "MUGGLE_COMPONENTS";
-            export { default as AllPages } from "MUGGLE_PAGES";
-            export { default as Head } from "muggle/client";`,
+            export { default as AllPages } from "MUGGLE_PAGES";`,
         }),
         sucrase({
           exclude: ["node_modules/**"],
@@ -132,8 +131,15 @@ async function dev() {
       preserveEntrySignatures: "strict",
     },
   ]);
+
+  let count = 0;
   watcher.on("event", (event) => {
-    if (event.code === "ERROR") {
+    if (event.code === "BUNDLE_END") {
+      count += 1;
+      if (count == 2) {
+        parentPort?.postMessage(true);
+      }
+    } else if (event.code === "ERROR") {
       console.log(event.error.message);
     }
   });
@@ -141,7 +147,6 @@ async function dev() {
 
 if (!isMainThread) {
   dev();
-  parentPort?.postMessage(true);
 }
 
 export default dev;

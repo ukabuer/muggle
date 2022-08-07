@@ -6,7 +6,7 @@ import fs from "fs/promises";
 import { ComponentType, h, Fragment, options, VNode } from "preact";
 import renderToString from "preact-render-to-string";
 import Layout, { PROPS, reset } from "./Layout";
-import type Head from "./client/Head";
+import Heads from "./client/Head";
 
 export async function startCompile() {
   const script = resolve(__dirname, "./compile");
@@ -65,7 +65,7 @@ export function processPages(
   return routes;
 }
 
-async function renderPage(page: PageModule, Heads: typeof Head) {
+async function renderPage(page: PageModule) {
   reset();
   let props: unknown | undefined;
   if (page.preload) {
@@ -97,12 +97,11 @@ export async function startServer(exportHTML?: boolean) {
   }
 
   const script = resolve("./dist/MUGGLE_APP.js");
-  const [pages, islands, Heads] = await import(script).then(
+  const [pages, islands] = await import(script).then(
     (m) =>
-      [m.AllPages, m.AllComponents, m.Head] as [
+      [m.AllPages, m.AllComponents] as [
         Record<string, PageModule>,
-        ComponentType[],
-        typeof Head
+        ComponentType[]
       ]
   );
 
@@ -111,7 +110,7 @@ export async function startServer(exportHTML?: boolean) {
 
   Object.entries(routes).forEach(([route, page]) => {
     app.get(route, async (req, res) => {
-      const html = await renderPage(page, Heads);
+      const html = await renderPage(page);
       res.writeHead(200, { "Content-Type": "text/html" });
       res.end(html);
 
