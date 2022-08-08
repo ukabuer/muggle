@@ -110,7 +110,7 @@ async function dev() {
           file: "dist/MUGGLE_APP.js",
         },
       ],
-      external: [/node_modules/, "muggle/client"],
+      external: [/node_modules/, "muggle"],
       plugins: [
         virtual({
           MUGGLE_COMPONENTS,

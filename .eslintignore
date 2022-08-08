@@ -12,3 +12,6 @@ client/*.d.ts
 client/*.map
 build
 public
+test
+bin
+*.config.js

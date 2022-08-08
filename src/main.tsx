@@ -6,7 +6,7 @@ import fs from "fs/promises";
 import { ComponentType, h, Fragment, options, VNode } from "preact";
 import renderToString from "preact-render-to-string";
 import Layout, { PROPS, reset } from "./Layout";
-import Heads from "./client/Head";
+import Heads from "./Head";
 
 export async function startCompile() {
   const script = resolve(__dirname, "./compile");
