@@ -1,5 +1,6 @@
 import cac from "cac";
 import fs from "fs-extra";
+import { devVite } from "../main";
 import dev from "./dev";
 import exportHTML from "./export";
 
@@ -31,5 +32,7 @@ const cli = cac();
 cli.command("serve").action(dev);
 
 cli.command("build").action(exportHTML);
+
+cli.command("vite").action(devVite);
 
 cli.parse();

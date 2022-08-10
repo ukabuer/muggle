@@ -7,6 +7,67 @@ import { ComponentType, h, Fragment, options, VNode } from "preact";
 import renderToString from "preact-render-to-string";
 import Layout, { PROPS, reset } from "./Layout";
 import Heads from "./Head";
+import { createServer } from "vite";
+
+export async function devVite() {
+  const t = `
+  <!DOCTYPE html>
+  <html lang="en">
+    <head></head>
+    <body data-barba="wrapper">
+      <body></body>
+      <script type="module" src="/dist/entry-client.tsx" />
+    </body>
+  </html>
+  `;
+
+  const app = polka();
+
+  if (await fs.stat("public")) {
+    app.use(sirv("public"));
+  }
+
+  const vite = await createServer({
+    logLevel: "info",
+    server: { middlewareMode: true },
+    optimizeDeps: {
+      force: true,
+      include: ["muggle"],
+    },
+    build: {
+      commonjsOptions: {
+        include: [/muggle/, /node_modules/],
+      },
+    },
+    appType: "custom",
+  });
+  app.use(vite.middlewares);
+
+  app.use("*", async (req, res, next) => {
+    const url = req.originalUrl;
+
+    try {
+      const template = await vite.transformIndexHtml(url, t);
+      const { render } = await vite.ssrLoadModule("/dist/entry-server.tsx");
+      const body = await render(url);
+      // template = template.replace("<head></head>", `"<head>${head}</head>"`);
+      const html = template.replace("<body></body>", `"<body>${body}</body>"`);
+
+      res.writeHead(200, { "Content-Type": "text/html" });
+      res.end(html);
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        console.log(e);
+        vite.ssrFixStacktrace(e);
+        next(e);
+      } else {
+        next("Error");
+      }
+    }
+  });
+
+  app.listen(5173);
+}
 
 export async function startCompile() {
   const script = resolve(__dirname, "./compile");
@@ -63,6 +124,26 @@ export function processPages(
     routes[route] = page;
   });
   return routes;
+}
+
+export async function renderComponent(page: PageModule) {
+  reset();
+  let props: unknown | undefined;
+  if (page.preload) {
+    props = await page.preload();
+  }
+  const Content = page.default;
+
+  const body = renderToString(
+    <Layout>
+      <Content page={props} />
+    </Layout>
+  );
+  const head = Heads.rewind()
+    .map((n: VNode) => renderToString(n))
+    .join("");
+
+  return [head, body];
 }
 
 async function renderPage(page: PageModule) {

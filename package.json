@@ -5,7 +5,14 @@
   "bin": {
     "muggle": "bin/muggle.js"
   },
-  "exports": "./dist/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "main": "./dis/index.js",
+  "module": "./dist/esm/index.js",
   "typesVersions": {
     "*": {
       "*": [
@@ -47,6 +54,7 @@
     "eslint-plugin-import": "^2.25.4",
     "eslint-plugin-react": "^7.28.0",
     "eslint-plugin-react-hooks": "^4.3.0",
-    "prettier": "^2.7.1"
+    "prettier": "^2.7.1",
+    "vite": "^3.0.5"
   }
 }

@@ -2,7 +2,8 @@ import { hydrate, h, ComponentType } from "preact";
 import barba from "@barba/core";
 // eslint-disable-next-line
 // @ts-ignore
-import AllComponents from "MUGGLE_COMPONENTS";
+// import AllComponents from "MUGGLE_COMPONENTS";
+const AllComponents: Record<string, ComponentType> = {};
 import "preact/debug";
 
 function error(reason: string, id: number, name?: string) {
@@ -19,7 +20,7 @@ function hydratePage() {
     const id = parseInt(el.dataset.muggleId || "", 10);
     const componentName = el.dataset.muggleComponent;
 
-    if (Number.isNaN(id) || id < 0 || id >= allProps.length) {
+    if (Number.isNaN(id) || id < 0 || id >= allProps.length || !componentName) {
       error("invalid id", id, componentName);
       return;
     }
