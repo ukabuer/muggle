@@ -7,22 +7,17 @@
   },
   "exports": {
     ".": {
+      "types": "./dist/esm/index.d.ts",
       "import": "./dist/esm/index.mjs",
       "require": "./dist/index.js"
     }
   },
-  "main": "./dis/index.js",
+  "main": "./dist/index.js",
   "module": "./dist/esm/index.js",
-  "typesVersions": {
-    "*": {
-      "*": [
-        "./dist/*"
-      ]
-    }
-  },
+  "types": "./dist/esm/index.d.ts",
   "scripts": {
-    "build": "rm -r ./dist/ && tsc",
-    "dev": "tsc -w",
+    "build": "rollup -c",
+    "dev": "rollup -cw",
     "test": "eslint . --max-warnings=0 && prettier --check ."
   },
   "keywords": [],
@@ -44,6 +39,7 @@
     "typescript": "^4.2.4"
   },
   "devDependencies": {
+    "@rollup/plugin-typescript": "^8.3.4",
     "@types/fs-extra": "^9.0.12",
     "@types/node": "^15.0.1",
     "@typescript-eslint/eslint-plugin": "^5.10.2",

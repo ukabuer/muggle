@@ -1,11 +1,10 @@
 {
   "include": ["src"],
-  "exclude": ["node_modules", "build", "dist"],
+  "exclude": ["node_modules", "dist"],
   "compilerOptions": {
-    "outDir": "dist",
     "target": "ESNext",
     "lib": ["esnext"],
-    "module": "CommonJS",
+    "module": "ESNext",
     "moduleResolution": "node",
     "noImplicitOverride": true,
     "allowSyntheticDefaultImports": true,
@@ -14,8 +13,9 @@
     "jsxFactory": "h",
     "jsxFragmentFactory": "Fragment",
     "strict": true,
-    "declaration": true,
+    "declaration": false,
     "sourceMap": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "noEmit": true
   }
 }

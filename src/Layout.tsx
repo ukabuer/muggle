@@ -26,7 +26,6 @@ const Layout: FunctionComponent<Page> = ({ children }) => (
   <main data-barba="container" data-barba-namespace="home">
     {children}
     <Scripts />
-    <script src="/entry-client.js" />
   </main>
 );
 

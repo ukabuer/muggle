@@ -2,9 +2,7 @@ import { hydrate, h, ComponentType } from "preact";
 import barba from "@barba/core";
 // eslint-disable-next-line
 // @ts-ignore
-// import AllComponents from "MUGGLE_COMPONENTS";
-const AllComponents: Record<string, ComponentType> = {};
-import "preact/debug";
+const islands = import.meta.glob("/islands/**/*.tsx", { eager: true });
 
 function error(reason: string, id: number, name?: string) {
   console.log(`Invalid component(id=${id}, name=${name}): ${reason}`);
@@ -25,7 +23,7 @@ function hydratePage() {
       return;
     }
 
-    const HComponent = AllComponents[componentName] as ComponentType;
+    const HComponent = islands[componentName].default as ComponentType;
     const props = allProps[id];
     if (!HComponent || typeof props !== "object") {
       error("invalid component", id, componentName);

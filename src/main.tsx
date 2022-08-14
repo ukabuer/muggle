@@ -10,13 +10,23 @@ import Heads from "./Head";
 import { createServer } from "vite";
 
 export async function devVite() {
+  await fs.mkdir("dist", { recursive: true });
+  await fs.copyFile(
+    resolve(__dirname, "esm/entry-client.js"),
+    "dist/entry-client.js"
+  );
+  await fs.copyFile(
+    resolve(__dirname, "esm/entry-client.js.map"),
+    "dist/entry-client.js.map"
+  );
+
   const t = `
   <!DOCTYPE html>
   <html lang="en">
-    <head></head>
+    <head><!-- HEAD --></head>
     <body data-barba="wrapper">
-      <body></body>
-      <script type="module" src="/dist/entry-client.tsx" />
+      <main></main>
+      <script type="module" src="/dist/entry-client.js"></script>
     </body>
   </html>
   `;
@@ -31,12 +41,11 @@ export async function devVite() {
     logLevel: "info",
     server: { middlewareMode: true },
     optimizeDeps: {
-      force: true,
-      include: ["muggle"],
+      include: ["muggle", "preact"],
     },
     build: {
       commonjsOptions: {
-        include: [/muggle/, /node_modules/],
+        include: [/node_modules/],
       },
     },
     appType: "custom",
@@ -48,10 +57,18 @@ export async function devVite() {
 
     try {
       const template = await vite.transformIndexHtml(url, t);
-      const { render } = await vite.ssrLoadModule("/dist/entry-server.tsx");
-      const body = await render(url);
-      // template = template.replace("<head></head>", `"<head>${head}</head>"`);
-      const html = template.replace("<body></body>", `"<body>${body}</body>"`);
+      const { render } = await vite.ssrLoadModule(
+        "/node_modules/muggle/dist/esm/entry-server.js"
+      );
+      const rendered = (await render(url)) as null | string[];
+      if (!rendered) {
+        res.writeHead(404, { "Content-Type": "text/plain" });
+        res.end("Not Found.");
+        return;
+      }
+      const [head, body] = rendered;
+      let html = template.replace("<!-- HEAD -->", head);
+      html = html.replace("<main></main>", body);
 
       res.writeHead(200, { "Content-Type": "text/html" });
       res.end(html);
@@ -66,7 +83,10 @@ export async function devVite() {
     }
   });
 
-  app.listen(5173);
+  const port = 5173;
+  app.listen(port, () => {
+    console.log("> Running on http://localhost:" + port.toString());
+  });
 }
 
 export async function startCompile() {

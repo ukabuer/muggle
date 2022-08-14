@@ -1,86 +1,35 @@
-import sucrase from "@rollup/plugin-sucrase";
+import typescript from "@rollup/plugin-typescript";
 import nodeResolve from "@rollup/plugin-node-resolve";
 
 export default [
   {
-    input: "src/cli/index.ts",
+    input: ["src/cli/index.ts", "src/export.ts"],
     output: [
       {
         format: "cjs",
-        file: "dist/cli.js",
+        dir: "dist",
+        sourcemap: true,
       },
     ],
     external: [/node_modules/],
-    plugins: [
-      sucrase({
-        exclude: ["node_modules/**"],
-        transforms: ["jsx", "typescript"],
-        jsxPragma: "h",
-        jsxFragmentPragma: "Fragment",
-      }),
-      nodeResolve(),
-    ],
+    plugins: [typescript(), nodeResolve()],
     context: "this",
     preserveEntrySignatures: false,
   },
   {
-    input: "src/compile.ts",
+    input: ["src/index.tsx", "src/entry-client.tsx", "src/entry-server.tsx"],
     output: [
       {
-        dir: "dist/",
-        format: "cjs",
-      },
-    ],
-    external: [/node_modules/],
-    plugins: [
-      sucrase({
-        exclude: ["node_modules/**"],
-        transforms: ["jsx", "typescript"],
-        jsxPragma: "h",
-        jsxFragmentPragma: "Fragment",
-      }),
-      nodeResolve(),
-    ],
-    context: "this",
-    preserveEntrySignatures: false,
-  },
-  {
-    input: "src/export.ts",
-    output: [
-      {
-        dir: "dist/",
-        format: "cjs",
-      },
-    ],
-    external: [/node_modules/],
-    plugins: [
-      sucrase({
-        exclude: ["node_modules/**"],
-        transforms: ["jsx", "typescript"],
-        jsxPragma: "h",
-        jsxFragmentPragma: "Fragment",
-      }),
-      nodeResolve(),
-    ],
-    context: "this",
-    preserveEntrySignatures: false,
-  },
-  {
-    input: "src/client/Head.tsx",
-    output: [
-      {
-        dir: "dist/client/",
+        dir: "dist/esm",
         format: "es",
-        name: "index.js",
+        sourcemap: true,
       },
     ],
     external: [/node_modules/],
     plugins: [
-      sucrase({
-        exclude: ["node_modules/**"],
-        transforms: ["jsx", "typescript"],
-        jsxPragma: "h",
-        jsxFragmentPragma: "Fragment",
+      typescript({
+        outDir: "dist/esm",
+        declaration: true,
       }),
       nodeResolve(),
     ],
