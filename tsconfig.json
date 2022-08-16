@@ -13,7 +13,7 @@
     "jsxFactory": "h",
     "jsxFragmentFactory": "Fragment",
     "strict": true,
-    "declaration": false,
+    "declaration": true,
     "sourceMap": false,
     "skipLibCheck": true
   }
