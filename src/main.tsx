@@ -12,12 +12,8 @@ import { createServer } from "vite";
 export async function devVite() {
   await fs.mkdir("dist", { recursive: true });
   await fs.copyFile(
-    resolve(__dirname, "esm/entry-client.js"),
+    resolve(__dirname, "../esm/entry-client.js"),
     "dist/entry-client.js"
-  );
-  await fs.copyFile(
-    resolve(__dirname, "esm/entry-client.js.map"),
-    "dist/entry-client.js.map"
   );
 
   const t = `

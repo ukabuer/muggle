@@ -14,8 +14,7 @@
     "jsxFragmentFactory": "Fragment",
     "strict": true,
     "declaration": false,
-    "sourceMap": true,
-    "skipLibCheck": true,
-    "noEmit": true
+    "sourceMap": false,
+    "skipLibCheck": true
   }
 }

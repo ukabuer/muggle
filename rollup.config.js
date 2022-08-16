@@ -7,8 +7,7 @@ export default [
     output: [
       {
         format: "cjs",
-        dir: "dist",
-        sourcemap: true,
+        dir: "dist/cjs",
       },
     ],
     external: [/node_modules/],
@@ -22,7 +21,6 @@ export default [
       {
         dir: "dist/esm",
         format: "es",
-        sourcemap: true,
       },
     ],
     external: [/node_modules/],
