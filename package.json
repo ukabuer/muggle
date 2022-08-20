@@ -1,9 +1,9 @@
 {
   "name": "muggle",
-  "version": "0.8.8",
+  "version": "0.8.9",
   "description": "",
   "bin": {
-    "muggle": "bin/muggle.js"
+    "muggle": "dist/cjs/cli/index.js"
   },
   "exports": {
     ".": {
