@@ -2,24 +2,28 @@ import { relative, resolve, parse, dirname } from "path";
 import sirv from "sirv";
 import polka from "polka";
 import fs from "fs/promises";
+import { getCSS } from "./Layout.js";
 import { ComponentType } from "preact";
 import { createServer } from "vite";
+import * as url from "url";
+import cssPlugin from "./vite-css.js";
+
+const __dirname = url.fileURLToPath(new url.URL(".", import.meta.url));
 
 export async function startServer(exportHTML?: boolean) {
   await fs.mkdir("dist", { recursive: true });
   await fs.copyFile(
-    resolve(__dirname, "../esm/entry-client.js"),
+    resolve(__dirname, "./entry-client.js"),
     "dist/entry-client.js"
   );
 
   const originHtml = `
   <!DOCTYPE html>
   <html lang="en">
-    <head><!-- HEAD -->
-    <link href="/style.css" rel="stylesheet" />
-    </head>
+    <head><!-- HEAD --></head>
     <body data-barba="wrapper">
       <main></main>
+      <script type="module" src="/dist/entry-client.js"></script>
     </body>
   </html>
   `;
@@ -32,20 +36,14 @@ export async function startServer(exportHTML?: boolean) {
   app.use(sirv("dist"));
 
   const vite = await createServer({
+    clearScreen: false,
     logLevel: "info",
     server: { middlewareMode: true },
-    optimizeDeps: {
-      include: ["muggle", "preact"],
-    },
-    build: {
-      commonjsOptions: {
-        include: [/node_modules/],
-      },
-      rollupOptions: {
-        external: ["preact"],
-      },
+    resolve: {
+      dedupe: ["preact"],
     },
     appType: "custom",
+    plugins: [cssPlugin],
   });
   app.use(vite.middlewares);
 
@@ -55,7 +53,7 @@ export async function startServer(exportHTML?: boolean) {
     try {
       const template = await vite.transformIndexHtml(url, originHtml);
       const { render } = await vite.ssrLoadModule(
-        "/node_modules/muggle/dist/esm/entry-server.js"
+        resolve(__dirname, "./entry-server.js")
       );
       const rendered = (await render(url)) as null | string[];
       if (!rendered) {
@@ -64,7 +62,8 @@ export async function startServer(exportHTML?: boolean) {
         return;
       }
       const [head, body] = rendered;
-      let html = template.replace("<!-- HEAD -->", head);
+      const css = `<style>${getCSS()}</style>`;
+      let html = template.replace("<!-- HEAD -->", head + css);
       html = html.replace("<main></main>", body);
 
       res.writeHead(200, { "Content-Type": "text/html" });

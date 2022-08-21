@@ -1,9 +1,8 @@
 #!/usr/bin/env node
 import cac from "cac";
 import fs from "fs-extra";
-import startCompile from "./compile";
-import startExport from "./export";
-import { startServer } from "./server";
+import startExport from "./export.js";
+import { startServer } from "./server.js";
 
 export const store = "node_modules/.muggle/";
 
@@ -31,7 +30,6 @@ mergeConfig();
 const cli = cac();
 
 cli.command("serve").action(async () => {
-  // await startCompile();
   startServer();
 });
 

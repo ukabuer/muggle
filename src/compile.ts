@@ -2,6 +2,9 @@ import fs from "fs/promises";
 import { build } from "vite";
 import { Worker, isMainThread, parentPort } from "worker_threads";
 import { resolve } from "path";
+import * as url from "url";
+
+const __dirname = url.fileURLToPath(new url.URL(".", import.meta.url));
 
 async function compile() {
   await fs.mkdir("dist", { recursive: true });

@@ -1,5 +1,5 @@
 import { Worker, isMainThread, parentPort } from "worker_threads";
-import { PageModule, processPages } from "./server";
+import { PageModule, processPages } from "./server.js";
 import fse from "fs-extra";
 import http from "http";
 

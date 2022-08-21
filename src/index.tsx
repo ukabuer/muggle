@@ -1,4 +1,4 @@
-export { default as Head } from "./Head";
+export { default as Head } from "./Head.js";
 
 import { createContext } from "preact";
 import { useContext } from "preact/hooks";

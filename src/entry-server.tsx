@@ -1,11 +1,10 @@
 import { options, h, Fragment, ComponentType, VNode } from "preact";
 import renderToString from "preact-render-to-string";
-import { PROPS } from "./Layout";
-import { PageModule } from "./server";
-import { parse_route_id, exec } from "./routing";
-import Heads from "./Head";
-import Layout, { reset } from "./Layout";
-import { AppContext } from "./index";
+import { PageModule } from "./server.js";
+import { parse_route_id, exec } from "./routing.js";
+import Heads from "./Head.js";
+import Layout, { PROPS, reset } from "./Layout.js";
+import { AppContext } from "./index.js";
 
 // eslint-disable-next-line
 // @ts-ignore
