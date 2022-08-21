@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 import cac from "cac";
 import fs from "fs-extra";
-import { devVite } from "../main";
-import dev from "./dev";
-import exportHTML from "./export";
+import startCompile from "./compile";
+import startExport from "./export";
+import { startServer } from "./server";
 
-export const store = "dist/.tmp/";
+export const store = "node_modules/.muggle/";
 
 export const config = {
   apis: "apis",
@@ -30,10 +30,15 @@ mergeConfig();
 
 const cli = cac();
 
-cli.command("serve").action(dev);
+cli.command("serve").action(async () => {
+  // await startCompile();
+  startServer();
+});
 
-cli.command("build").action(exportHTML);
-
-cli.command("vite").action(devVite);
+cli.command("build").action(async () => {
+  fs.rmSync("dist", { force: true, recursive: true });
+  startServer(true);
+  startExport();
+});
 
 cli.parse();

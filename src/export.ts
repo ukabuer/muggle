@@ -1,5 +1,5 @@
-import { resolve } from "path";
-import { PageModule, processPages } from "./main";
+import { Worker, isMainThread, parentPort } from "worker_threads";
+import { PageModule, processPages } from "./server";
 import fse from "fs-extra";
 import http from "http";
 
@@ -44,10 +44,7 @@ async function exportHTML() {
       overwrite: true,
     });
   }
-  const script = resolve("./dist/MUGGLE_APP.js");
-  const pages = await import(script).then(
-    (m) => m.AllPages as Record<string, PageModule>
-  );
+  const pages: Record<string, PageModule> = {};
   const routes = Object.keys(processPages(pages)).filter(
     (route) => !route.includes(":")
   );
@@ -88,4 +85,19 @@ async function exportHTML() {
   }
 }
 
-exportHTML();
+if (!isMainThread) {
+  (async () => {
+    await exportHTML();
+    parentPort?.postMessage(true);
+  })();
+}
+
+export function startExport() {
+  const requestor = new Worker(__filename);
+  requestor.addListener("error", (err) => {
+    console.error(err.message);
+  });
+  return requestor;
+}
+
+export default startExport;

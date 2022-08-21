@@ -1,7 +1,11 @@
-import { options, h, Fragment, ComponentType } from "preact";
+import { options, h, Fragment, ComponentType, VNode } from "preact";
+import renderToString from "preact-render-to-string";
 import { PROPS } from "./Layout";
-import { PageModule, renderComponent } from "./main";
+import { PageModule } from "./server";
 import { parse_route_id, exec } from "./routing";
+import Heads from "./Head";
+import Layout, { reset } from "./Layout";
+import { AppContext } from "./index";
 
 // eslint-disable-next-line
 // @ts-ignore
@@ -69,6 +73,28 @@ Object.entries(pages).forEach(([file, page]) => {
   routes.push(item);
 });
 
+export async function renderComponent(path: string, page: PageModule) {
+  reset();
+  let props: unknown | undefined;
+  if (page.preload) {
+    props = await page.preload();
+  }
+  const Content = page.default;
+
+  const body = renderToString(
+    <AppContext.Provider value={{ path }}>
+      <Layout>
+        <Content page={props} />
+      </Layout>
+    </AppContext.Provider>
+  );
+  const head = Heads.rewind()
+    .map((n: VNode) => renderToString(n))
+    .join("");
+
+  return [head, body];
+}
+
 export async function render(url: string) {
   for (const route of routes) {
     const matches = url.match(route.match.pattern);
@@ -76,8 +102,7 @@ export async function render(url: string) {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const _params = exec(matches, route.match.names);
-
-    return renderComponent(route.page);
+    return renderComponent(url, route.page);
   }
 
   return Promise.resolve(null);

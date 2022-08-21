@@ -1,5 +1,4 @@
 import { hydrate, h, ComponentType } from "preact";
-import barba from "@barba/core";
 // eslint-disable-next-line
 // @ts-ignore
 const islands = import.meta.glob("/islands/**/*.tsx", { eager: true });
@@ -69,15 +68,17 @@ function hydratePage() {
   });
 }
 
-barba.init({
-  views: [
-    {
-      namespace: "home",
-      afterEnter() {
-        setTimeout(() => {
-          hydratePage();
-        });
-      },
-    },
-  ],
-});
+hydratePage();
+
+// barba.init({
+//   views: [
+//     {
+//       namespace: "home",
+//       afterEnter() {
+//         setTimeout(() => {
+//           hydratePage();
+//         });
+//       },
+//     },
+//   ],
+// });
