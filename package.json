@@ -1,6 +1,6 @@
 {
   "name": "muggle",
-  "version": "0.8.10",
+  "version": "0.8.10-beta.0",
   "description": "",
   "bin": {
     "muggle": "dist/cjs/cli.js"
