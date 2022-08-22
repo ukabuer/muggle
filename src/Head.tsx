@@ -87,6 +87,22 @@ function reducer(components: Component["props"][]): AnyVNode[] {
     .reverse()
     .filter(unique())
     .reverse()
+    .map((c) => {
+      if (
+        typeof c.type === "string" &&
+        c.type === "style" &&
+        !("dangerouslySetInnerHTML" in c.props) &&
+        "children" in c.props &&
+        typeof c.props["children"] !== "object"
+      ) {
+        c.props["dangerouslySetInnerHTML"] = {
+          __html: String(c.props.children || ""),
+        };
+        c.props["children"] = null;
+      }
+
+      return c;
+    })
     .map((c) => cloneElement(c));
 }
 
