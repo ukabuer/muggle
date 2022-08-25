@@ -1,5 +1,4 @@
 import { PluginOption } from "vite";
-import { setCSS } from "./Layout.js";
 
 const cssLangs = `\\.(css|less|sass|scss|styl|stylus|pcss|postcss)($|\\?)`;
 const cssLangRE = new RegExp(cssLangs);
@@ -13,7 +12,6 @@ const plugin: PluginOption = {
       return;
     }
 
-    setCSS(id, css);
     return css;
   },
 };

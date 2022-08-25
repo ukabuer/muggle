@@ -1,6 +1,6 @@
 {
   "name": "muggle",
-  "version": "0.8.10-beta.0",
+  "version": "0.8.13",
   "description": "",
   "bin": {
     "muggle": "dist/cli.js"
@@ -9,6 +9,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./dist/entry-server.js": {
+      "types": "./dist/entry-server.d.ts",
+      "import": "./dist/entry-server.js"
     }
   },
   "type": "module",
@@ -17,10 +21,11 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "watch": "tsc -w",
+    "dev": "tsc -w",
     "test:lint": "eslint . --max-warnings=0",
     "test:format": "prettier --check .",
-    "test": "concurrently npm:test:lint npm:test:format"
+    "test": "concurrently npm:test:lint npm:test:format",
+    "prepack": "tsc"
   },
   "keywords": [],
   "author": "",
@@ -47,7 +52,8 @@
     "eslint-plugin-import": "^2.25.4",
     "eslint-plugin-react": "^7.28.0",
     "eslint-plugin-react-hooks": "^4.3.0",
-    "prettier": "^2.7.1"
+    "prettier": "^2.7.1",
+    "vite-plugin-inspect": "^0.6.0"
   },
   "peerDependencies": {
     "preact": "^10.10.6"

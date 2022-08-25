@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 import cac from "cac";
 import fs from "fs-extra";
-import startExport from "./export.js";
-import { startServer } from "./server.js";
+import startExport, { compile } from "./export.js";
+import { startDevServer, startBuildServer } from "./server.js";
 
 export const store = "node_modules/.muggle/";
 
@@ -30,13 +30,15 @@ mergeConfig();
 const cli = cac();
 
 cli.command("serve").action(async () => {
-  startServer();
+  startDevServer();
 });
 
 cli.command("build").action(async () => {
   fs.rmSync("dist", { force: true, recursive: true });
-  startServer(true);
-  startExport();
+  await compile();
+  const app = await startBuildServer();
+  await startExport();
+  app.server.close();
 });
 
 cli.parse();

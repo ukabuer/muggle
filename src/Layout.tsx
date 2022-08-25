@@ -34,7 +34,6 @@ const Scripts: FunctionComponent = () => (
   <script
     id="__MUGGLE_ISLAND_PROPS"
     type="application/json"
-    // eslint-disable-next-line react/no-danger
     dangerouslySetInnerHTML={{
       __html: JSON.stringify(PROPS),
     }}

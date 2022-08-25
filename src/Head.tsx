@@ -71,7 +71,10 @@ function updateTitle(component: AnyVNode) {
   }
 }
 
-function reducer(components: Component["props"][]): AnyVNode[] {
+function reducer(
+  components: Component["props"][],
+  exportMode = false
+): AnyVNode[] {
   const allChildren: ComponentChildren[] = [];
   for (const c of components) {
     if (c.children) {
@@ -87,6 +90,9 @@ function reducer(components: Component["props"][]): AnyVNode[] {
     .reverse()
     .filter(unique())
     .reverse()
+    .filter((c) =>
+      exportMode ? typeof c.type !== "string" || c.type !== "style" : true
+    )
     .map((c) => {
       if (
         typeof c.type === "string" &&
@@ -182,8 +188,11 @@ function update() {
 }
 
 export default class Head extends Component {
-  static rewind() {
-    const state = reducer(mounted.map((mount) => mount.props));
+  static rewind(exportMode: boolean) {
+    const state = reducer(
+      mounted.map((mount) => mount.props),
+      exportMode
+    );
     mounted = [];
     return state;
   }

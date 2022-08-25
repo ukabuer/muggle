@@ -2,9 +2,10 @@ import { options, h, Fragment, ComponentType, VNode } from "preact";
 import renderToString from "preact-render-to-string";
 import { PageModule } from "./server.js";
 import { parse_route_id, exec } from "./routing.js";
-import Heads from "./Head.js";
 import Layout, { PROPS, reset } from "./Layout.js";
-import { AppContext } from "./index.js";
+// eslint-disable-next-line
+// @ts-ignore
+import { AppContext, Head as Heads } from "muggle";
 
 // eslint-disable-next-line
 // @ts-ignore
@@ -17,7 +18,8 @@ function hook() {
     const OriginalType = vnode.type as ComponentType<unknown>;
     if (typeof vnode.type === "function") {
       const island = Object.entries(islands).find(
-        ([, component]) => (component as any).default === OriginalType
+        ([, component]) =>
+          (component as { default: unknown }).default === OriginalType
       );
       if (island) {
         if (ignoreNext) {
@@ -72,11 +74,16 @@ Object.entries(pages).forEach(([file, page]) => {
   routes.push(item);
 });
 
-export async function renderComponent(path: string, page: PageModule) {
+export async function renderComponent(
+  path: string,
+  params: Record<string, string>,
+  page: PageModule,
+  exportMode: boolean
+) {
   reset();
   let props: unknown | undefined;
   if (page.preload) {
-    props = await page.preload();
+    props = await page.preload(params);
   }
   const Content = page.default;
 
@@ -87,21 +94,20 @@ export async function renderComponent(path: string, page: PageModule) {
       </Layout>
     </AppContext.Provider>
   );
-  const head = Heads.rewind()
+  const head = Heads.rewind(exportMode)
     .map((n: VNode) => renderToString(n))
     .join("");
 
   return [head, body];
 }
 
-export async function render(url: string) {
+export async function render(url: string, exportMode = false) {
   for (const route of routes) {
     const matches = url.match(route.match.pattern);
     if (!matches) continue;
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const _params = exec(matches, route.match.names);
-    return renderComponent(url, route.page);
+    const params = exec(matches, route.match.names);
+    return renderComponent(url, params, route.page, exportMode);
   }
 
   return Promise.resolve(null);
