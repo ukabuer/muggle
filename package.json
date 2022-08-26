@@ -24,7 +24,8 @@
     "dev": "tsc -w",
     "test:lint": "eslint . --max-warnings=0",
     "test:format": "prettier --check .",
-    "test": "concurrently npm:test:lint npm:test:format",
+    "test": "node--test dist/test",
+    "pretest": "tsc",
     "prepack": "tsc"
   },
   "keywords": [],
@@ -35,7 +36,6 @@
     "cac": "^6.7.3",
     "concurrently": "^7.3.0",
     "fs-extra": "^10.0.0",
-    "glob": "^8.0.3",
     "polka": "^1.0.0-next.15",
     "preact-render-to-string": "^5.2.1",
     "sirv": "^1.0.12",
@@ -44,7 +44,6 @@
   },
   "devDependencies": {
     "@types/fs-extra": "^9.0.12",
-    "@types/glob": "^7.2.0",
     "@types/node": "^15.0.1",
     "@typescript-eslint/eslint-plugin": "^5.10.2",
     "@typescript-eslint/parser": "^5.10.2",
@@ -53,6 +52,7 @@
     "eslint-plugin-react": "^7.28.0",
     "eslint-plugin-react-hooks": "^4.3.0",
     "prettier": "^2.7.1",
+    "test": "^3.2.1",
     "vite-plugin-inspect": "^0.6.0"
   },
   "peerDependencies": {
