@@ -5,7 +5,7 @@ import { parse_route_id, exec } from "./routing.js";
 import Layout, { PROPS, reset } from "./Layout.js";
 // eslint-disable-next-line
 // @ts-ignore
-import { AppContext, Head as Heads } from "muggle";
+import { AppContext, Head } from "muggle";
 
 // eslint-disable-next-line
 // @ts-ignore
@@ -94,7 +94,7 @@ export async function renderComponent(
       </Layout>
     </AppContext.Provider>
   );
-  const head = Heads.rewind(exportMode)
+  const head = Head.rewind(exportMode)
     .map((n: VNode) => renderToString(n))
     .join("");
 

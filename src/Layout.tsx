@@ -1,29 +1,9 @@
 import { h, FunctionComponent, ComponentChildren } from "preact";
 
 export let PROPS: unknown[] = [];
-export let CSS = "";
-export const CSSMap: Record<string, string> = {};
-export const existCSS: Set<string> = new Set();
 
 export function reset() {
   PROPS = [];
-}
-
-export function setCSS(id: string, css: string) {
-  CSSMap[id] = css;
-  CSS = Object.values(CSSMap).join("\n");
-}
-
-export function setValidCSS(ids: Set<string>) {
-  Object.keys(CSSMap).forEach((id) => {
-    if (!ids.has(id)) {
-      delete CSSMap[id];
-    }
-  });
-}
-
-export function getCSS() {
-  return CSS;
 }
 
 type Page = {
