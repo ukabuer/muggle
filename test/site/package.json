@@ -2,8 +2,10 @@
   "name": "muggle-test",
   "version": "0.0.1",
   "description": "",
+  "type": "module",
+  "private": true,
   "scripts": {
-    "serve": "muggle vite",
+    "dev": "muggle serve",
     "build": "muggle build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -11,6 +13,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "muggle": "../../"
+    "muggle": "file:../../muggle-0.8.14-beta.5.tgz"
+  },
+  "devDependencies": {
+    "@types/node": "^18.7.13"
   }
 }
