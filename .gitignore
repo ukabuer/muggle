@@ -12,3 +12,4 @@ client/*.d.ts
 client/*.map
 build
 public
+/*.tgz

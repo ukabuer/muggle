@@ -30,8 +30,12 @@ export async function startDevServer(): Promise<Polka> {
 
   const app = polka();
 
-  if (await fs.stat("public")) {
-    app.use(sirv("public"));
+  try {
+    if (await fs.stat("public")) {
+      app.use(sirv("public"));
+    }
+  } catch {
+    void 0;
   }
 
   const originHtml = getTemplateHTML();
@@ -99,8 +103,12 @@ export async function startBuildServer(): Promise<Polka> {
 
   const app = polka();
 
-  if (await fs.stat("public")) {
-    app.use(sirv("public"));
+  try {
+    if (await fs.stat("public")) {
+      app.use(sirv("public"));
+    }
+  } catch {
+    void 0;
   }
 
   const entryHTML = await fs.readFile("dist/.temp/index.html", "utf8");

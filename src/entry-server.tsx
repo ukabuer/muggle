@@ -9,7 +9,7 @@ import { AppContext, Head } from "muggle";
 
 // eslint-disable-next-line
 // @ts-ignore
-const islands = import.meta.glob("/islands/**/*.tsx", { eager: true });
+const islands = import.meta.glob("/islands/**/*.{tsx,jsx}", { eager: true });
 
 function hook() {
   const originalHook = options.vnode;
@@ -49,7 +49,7 @@ hook();
 
 // eslint-disable-next-line
 // @ts-ignore
-const pages = import.meta.glob("/pages/**/*.tsx", { eager: true });
+const pages = import.meta.glob("/pages/**/*.{tsx,jsx}", { eager: true });
 
 type Route = {
   page: PageModule;

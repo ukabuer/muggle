@@ -1,7 +1,7 @@
 import { hydrate, h, ComponentType } from "preact";
 // eslint-disable-next-line
 // @ts-ignore
-const islands = import.meta.glob("/islands/**/*.tsx", { eager: true });
+const islands = import.meta.glob("/islands/**/*.{tsx,jsx}", { eager: true });
 
 function error(reason: string, id: number, name?: string) {
   console.log(`Invalid component(id=${id}, name=${name}): ${reason}`);

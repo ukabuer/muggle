@@ -39,7 +39,7 @@ export function processPages(pages: string[]): string[] {
   pages.forEach((path) => {
     const info = parse(path);
     let route = path.substring(0, path.length - info.ext.length);
-    route = relative("pages", route).replaceAll("\\", "/");
+    route = relative("pages", route).replace(/\\/g, "/");
     route = `/${route}`;
     if (route.endsWith("index"))
       route = route.substring(0, route.length - "index".length);
