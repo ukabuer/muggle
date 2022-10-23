@@ -3,9 +3,7 @@ import renderToString from "preact-render-to-string";
 import { PageModule } from "./server.js";
 import { parse_route_id, exec } from "./routing.js";
 import Layout, { PROPS, reset } from "./Layout.js";
-// eslint-disable-next-line
-// @ts-ignore
-import { AppContext, Head } from "muggle";
+import { AppContext, Head } from "./index.js";
 
 // eslint-disable-next-line
 // @ts-ignore

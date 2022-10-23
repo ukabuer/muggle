@@ -69,16 +69,3 @@ function hydratePage() {
 }
 
 hydratePage();
-
-// barba.init({
-//   views: [
-//     {
-//       namespace: "home",
-//       afterEnter() {
-//         setTimeout(() => {
-//           hydratePage();
-//         });
-//       },
-//     },
-//   ],
-// });

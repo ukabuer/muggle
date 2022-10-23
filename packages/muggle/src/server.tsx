@@ -23,9 +23,13 @@ export function getTemplateHTML() {
 
 export async function startDevServer(): Promise<Polka> {
   await fs.mkdir("dist/.temp", { recursive: true });
-  await fs.copyFile(
-    resolve(__dirname, "./entry-client.js"),
-    "dist/.temp/entry-client.js"
+  await fs.writeFile(
+    "dist/.temp/entry-server.js",
+    `export * from "muggle/entry-server.js"`
+  );
+  await fs.writeFile(
+    "dist/.temp/entry-client.js",
+    `import "muggle/entry-client.js"`
   );
 
   const app = polka();
@@ -46,9 +50,7 @@ export async function startDevServer(): Promise<Polka> {
     resolve: {
       dedupe: ["preact"],
     },
-    ssr: {
-      noExternal: ["muggle"],
-    },
+    ssr: {},
     appType: "custom",
   });
   app.use(vite.middlewares);
@@ -59,7 +61,7 @@ export async function startDevServer(): Promise<Polka> {
     try {
       const template = await vite.transformIndexHtml(url, originHtml);
       const { render } = await vite.ssrLoadModule(
-        resolve(__dirname, "./entry-server.js")
+        "./dist/.temp/entry-server.js"
       );
       const rendered = (await render(url, false)) as null | string[];
       if (!rendered) {
@@ -95,12 +97,6 @@ export async function startDevServer(): Promise<Polka> {
 }
 
 export async function startBuildServer(): Promise<Polka> {
-  await fs.mkdir("dist/.temp", { recursive: true });
-  await fs.copyFile(
-    resolve(__dirname, "./entry-client.js"),
-    "dist/.temp/entry-client.js"
-  );
-
   const app = polka();
 
   try {

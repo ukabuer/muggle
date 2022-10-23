@@ -1,6 +1,5 @@
 import { h, FunctionComponent } from "preact";
-
-const dev = false;
+import { IsDev } from "./config.js";
 
 type Props = {
   inline?: boolean;
@@ -8,7 +7,7 @@ type Props = {
 };
 
 const Style: FunctionComponent<Props> = (props: Props) => {
-  if (props.inline || dev) {
+  if (props.inline || IsDev) {
     const css = props.children;
 
     return <style dangerouslySetInnerHTML={{ __html: css }}></style>;
