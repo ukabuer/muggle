@@ -1,5 +1,5 @@
 {
-  "name": "muggle-test",
+  "name": "muggle-site",
   "version": "0.0.1",
   "description": "",
   "type": "module",
@@ -13,7 +13,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "muggle": "file:../../muggle-0.8.14-beta.5.tgz"
+    "muggle": "file:../muggle",
+    "preact": "^10.10.6"
   },
   "devDependencies": {
     "@types/node": "^18.7.13"

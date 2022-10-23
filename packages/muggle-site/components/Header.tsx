@@ -1,12 +1,12 @@
 import { h, FunctionalComponent } from "preact";
-import { Head } from "muggle";
+import { Head, Style } from "muggle";
 import css from "./style.css";
 
 const Header: FunctionalComponent = () => {
   return (
     <header>
       <Head>
-        <style>{css}</style>
+        <Style>{css}</Style>
       </Head>
       <a href="/">Index</a>
       <a href="/about/">About</a>
