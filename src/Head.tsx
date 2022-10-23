@@ -69,9 +69,6 @@ function reducer(
     .reverse()
     .filter(unique())
     .reverse()
-    .filter((c) =>
-      exportMode ? typeof c.type !== "string" || c.type !== "style" : true
-    )
     .map((c) => {
       if (
         typeof c.type === "string" &&

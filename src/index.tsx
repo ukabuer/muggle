@@ -1,4 +1,5 @@
 export { default as Head } from "./Head.js";
+export { default as Style } from "./Style";
 
 import { createContext } from "preact";
 import { useContext } from "preact/hooks";
