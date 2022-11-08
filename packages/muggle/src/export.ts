@@ -1,62 +1,10 @@
 import fse from "fs-extra";
-import http from "http";
 import { build } from "vite";
-import * as url from "url";
-import { relative, parse, resolve } from "path";
+import { dirname, relative, resolve } from "node:path";
 import fs from "fs/promises";
-import { getTemplateHTML } from "./server.js";
-
-const __dirname = url.fileURLToPath(new url.URL(".", import.meta.url));
-
-async function collect(rootDir: string, test: (_: string) => boolean) {
-  const files: string[] = [];
-
-  async function traversal(dir: string) {
-    const stat = await fs.stat(dir);
-    if (!stat || !stat.isDirectory()) return;
-
-    const items = await fs.readdir(dir);
-
-    const tasks = items.map(async (item) => {
-      const path = resolve(dir, item);
-      const substat = await fs.stat(path);
-      if (substat.isDirectory()) {
-        await traversal(path);
-      } else if (test(path)) {
-        files.push(path);
-      }
-    });
-    await Promise.all(tasks);
-  }
-
-  await traversal(rootDir);
-
-  return files;
-}
-
-export function processPages(pages: string[]): string[] {
-  const routes: string[] = [];
-  pages.forEach((path) => {
-    const info = parse(path);
-    let route = path.substring(0, path.length - info.ext.length);
-    route = relative("pages", route).replace(/\\/g, "/");
-    route = `/${route}`;
-    if (route.endsWith("index"))
-      route = route.substring(0, route.length - "index".length);
-    if (!route.endsWith("/")) route += "/";
-
-    const matches = route.match(/\[(\w+)\]/g);
-    if (matches && matches.length > 0) {
-      for (const match of matches) {
-        const slug = match.substring(1, match.length - 1);
-        route = route.replace(match, `:${slug}`);
-      }
-    }
-
-    routes.push(route);
-  });
-  return routes;
-}
+import { createEntryScripts, createEntryHtml } from "./prepare.js";
+import { pathToFileURL } from "url";
+import { transformPathToRoute } from "./routing.js";
 
 // from https://github.com/sveltejs/kit/blob/master/packages/kit/src/core/adapt/prerender.js
 export function cleanHtml(html: string) {
@@ -73,59 +21,43 @@ export function getHref(attrs: string) {
   return match && (match[1] || match[2] || match[3]);
 }
 
-async function request(path: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    http
-      .get(path, (resp) => {
-        let data = "";
+export async function compile(outDir: string, tempDir: string) {
+  await fs.mkdir(tempDir, { recursive: true });
 
-        resp.on("data", (chunk) => {
-          data += chunk;
-        });
+  const entryHTMLPath = resolve(tempDir, "app.html");
+  await createEntryHtml(entryHTMLPath);
 
-        resp.on("end", () => {
-          resolve(data);
-        });
-      })
-      .on("error", (error) => {
-        reject(error);
-      });
-  });
-}
+  const entryScripts = await createEntryScripts(tempDir);
 
-export async function compile() {
-  await fs.mkdir("dist/.temp", { recursive: true });
-
-  await fs.copyFile(
-    resolve(__dirname, "./entry-client.js"),
-    "dist/.temp/entry-client.js"
-  );
-
-  const entryHTMLPath = "dist/.temp/app.html";
-  await fs.writeFile(entryHTMLPath, getTemplateHTML());
   await build({
     mode: "production",
     publicDir: false,
+    logLevel: "warn",
     build: {
       lib: {
-        entry: resolve(__dirname, "./entry-server.js"),
+        entry: entryScripts.server,
         formats: ["es"],
         name: "entry-server",
         fileName: "entry-server",
       },
       rollupOptions: {
-        external: ["muggle"],
+        external: [
+          "muggle",
+          "muggle/entry-server.js",
+          "muggle/entry-client.js",
+        ],
       },
-      minify: true,
+      minify: false,
       ssr: true,
       emptyOutDir: false,
-      outDir: "dist/.temp",
+      outDir: tempDir,
     },
   });
 
   const compiler = await build({
     mode: "production",
     publicDir: false,
+    logLevel: "warn",
     build: {
       rollupOptions: {
         input: entryHTMLPath,
@@ -133,13 +65,19 @@ export async function compile() {
       minify: true,
       emptyOutDir: false,
       manifest: false,
-      outDir: "dist",
+      outDir,
     },
   });
 
-  await fs.copyFile("dist/dist/.temp/app.html", "dist/.temp/index.html");
-  await fs.copyFile("dist/.temp/style.css", "dist/assets/style.css");
-  await fs.rm("dist/dist", { recursive: true });
+  // need optimization: complex vite artifact path
+  await fs.copyFile(
+    resolve(outDir, relative(".", tempDir), "./app.html"),
+    resolve(tempDir, "./index.html"),
+  );
+  await fs.copyFile(
+    resolve(tempDir, "./style.css"),
+    resolve(outDir, "./assets/style.css"),
+  );
 
   if ("addListener" in compiler) {
     return new Promise((resolve, reject) => {
@@ -160,24 +98,37 @@ export async function compile() {
   }
 }
 
-async function exportHTML() {
-  if (fse.existsSync("public")) {
-    fse.copySync("public/", "dist/", {
+export interface Config {
+  out: string;
+  public: string;
+}
+
+async function startExport(config: Config) {
+  const outDir = config.out.endsWith("/") ? config.out : `${config.out}/`;
+  const publicDir = config.public;
+
+  const tempDir = resolve(outDir, ".temp/");
+
+  fse.rmSync(outDir, { force: true, recursive: true });
+  await compile(outDir, tempDir);
+
+  if (fse.existsSync(publicDir)) {
+    fse.copySync(publicDir, outDir, {
       overwrite: true,
     });
   }
 
-  const sources = await await collect(
-    "./pages",
-    (file) => file.endsWith(".jsx") || file.endsWith(".tsx")
-  );
-  console.log("Current dir: ", process.cwd());
-  console.log("page soruces: ", sources);
-  const pageFiles = sources.map((file) => relative(process.cwd(), file));
-  const routes = processPages(pageFiles).filter(
-    (route) => !route.includes(":")
-  );
-  console.log("initial page routes: ", routes);
+  const template = await fs.readFile(resolve(tempDir, "index.html"), "utf8");
+  const entryServer = pathToFileURL(
+    resolve(tempDir, "entry-server.js"),
+  ).toString();
+  const { pages, render } = await import(entryServer);
+  const routes = Object.keys(pages)
+    .map(transformPathToRoute)
+    .filter((route) => !route.includes(":"));
+  console.log("Initial page routes: ", routes);
+
+  const writeTasks: Promise<string>[] = [];
 
   const unresolved: string[] = [...routes];
   const resolved = new Set();
@@ -187,13 +138,26 @@ async function exportHTML() {
       continue;
     }
 
-    // request url & get response
-    const target = `http://localhost:5173${url}`;
-    const response = await request(target);
-    // save to file
-    // parse to find more url
-    const cleaned = cleanHtml(response);
+    const rendered = (await render(url, true)) as null | string[];
+    if (!rendered) {
+      continue;
+    }
+    const [head, body] = rendered;
+    const bundle = '<link href="/assets/style.css" rel="stylesheet" />';
+    let html = template.replace("<!-- HEAD -->", head + bundle);
+    html = html.replace("<main></main>", body);
 
+    let file = url.endsWith("/") ? `${url}index.html` : `${url}.html`;
+    file = resolve(outDir, `.${file}`);
+
+    const dir = dirname(file);
+    const writeTask = fs
+      .mkdir(dir, { recursive: true })
+      .then(() => fs.writeFile(file, html))
+      .then(() => url);
+    writeTasks.push(writeTask);
+
+    const cleaned = cleanHtml(html);
     const pattern = /<(a|link|)\s+([\s\S]+?)>/gm;
     let match = pattern.exec(cleaned);
     while (match) {
@@ -206,19 +170,18 @@ async function exportHTML() {
         !href.endsWith(".css") &&
         !href.endsWith(".js")
       ) {
-        const fullUrl = new URL(href, "http://localhost:5173/");
-        unresolved.push(fullUrl.pathname);
+        const url = href.endsWith("/") ? href : `${href}/`;
+        unresolved.push(url);
       }
       match = pattern.exec(cleaned);
     }
     resolved.add(url);
   }
 
-  await fs.rm("dist/.temp", { recursive: true });
-}
+  const urls = await Promise.all(writeTasks);
+  console.log("HTML exported:", urls);
 
-export async function startExport() {
-  return exportHTML();
+  await fs.rm(tempDir, { recursive: true });
 }
 
 export default startExport;

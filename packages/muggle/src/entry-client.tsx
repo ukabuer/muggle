@@ -1,13 +1,13 @@
-import { hydrate, h, ComponentType } from "preact";
-// eslint-disable-next-line
-// @ts-ignore
-const islands = import.meta.glob("/islands/**/*.{tsx,jsx}", { eager: true });
+import { hydrate, h } from "preact";
+import { ComponentModule } from "./entry-server.js";
 
 function error(reason: string, id: number, name?: string) {
   console.log(`Invalid component(id=${id}, name=${name}): ${reason}`);
 }
 
-function hydratePage() {
+export default function hydrateIslands(
+  islands: Record<string, ComponentModule>,
+) {
   const propsJsonEl = document.getElementById("__MUGGLE_ISLAND_PROPS");
   const allProps: unknown[] = JSON.parse(propsJsonEl?.textContent ?? "[]");
 
@@ -22,7 +22,7 @@ function hydratePage() {
       return;
     }
 
-    const HComponent = islands[componentName].default as ComponentType;
+    const HComponent = islands[componentName].default;
     const props = allProps[id];
     if (!HComponent || typeof props !== "object") {
       error("invalid component", id, componentName);
@@ -30,7 +30,9 @@ function hydratePage() {
     }
 
     const parent = script.parentNode;
-    if (!parent) return;
+    if (!parent) {
+      return;
+    }
 
     const end = parent.querySelector(`script[data-muggle-end-id="${id}"]`);
     if (!end) {
@@ -42,7 +44,7 @@ function hydratePage() {
     let current = script.nextSibling;
     while (current !== end) {
       children.push(current);
-      current = current && current.nextSibling;
+      current = current ? current.nextSibling : null;
     }
 
     function insert(c: Node, r: Node) {
@@ -67,5 +69,3 @@ function hydratePage() {
     parent.removeChild(end);
   });
 }
-
-hydratePage();

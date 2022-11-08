@@ -1,23 +1,26 @@
 import { options, h, Fragment, ComponentType, VNode } from "preact";
 import renderToString from "preact-render-to-string";
 import { PageModule } from "./server.js";
-import { parse_route_id, exec } from "./routing.js";
-import Layout, { PROPS, reset } from "./Layout.js";
-import { AppContext, Head } from "./index.js";
+import { createRouter } from "./routing.js";
+import Layout from "./components/Layout.js";
+import Head from "./components/Head.js";
+import { ServerRenderContext, ServerRenderContextData } from "./context.js";
 
-// eslint-disable-next-line
-// @ts-ignore
-const islands = import.meta.glob("/islands/**/*.{tsx,jsx}", { eager: true });
+export type ComponentModule = {
+  default: ComponentType<unknown>;
+};
 
-function hook() {
+export function hook(
+  islands: Record<string, ComponentModule>,
+  context: ServerRenderContextData,
+) {
   const originalHook = options.vnode;
   let ignoreNext = false;
   options.vnode = (vnode) => {
     const OriginalType = vnode.type as ComponentType<unknown>;
     if (typeof vnode.type === "function") {
       const island = Object.entries(islands).find(
-        ([, component]) =>
-          (component as { default: unknown }).default === OriginalType
+        ([, component]) => component.default === OriginalType,
       );
       if (island) {
         if (ignoreNext) {
@@ -26,87 +29,89 @@ function hook() {
         }
         vnode.type = (props) => {
           ignoreNext = true;
-          PROPS.push(props);
+          context.islandsProps.push(props);
+          const id = context.islandsProps.length - 1;
           return (
             <>
-              <script
-                data-muggle-id={PROPS.length - 1}
-                data-muggle-component={island[0]}
-              />
+              <script data-muggle-id={id} data-muggle-component={island[0]} />
               <OriginalType {...props} />
-              <script data-muggle-end-id={PROPS.length - 1} />
+              <script data-muggle-end-id={id} />
             </>
           );
         };
       }
     }
-    if (originalHook) originalHook(vnode);
+    if (originalHook) {
+      originalHook(vnode);
+    }
   };
 }
-hook();
 
-// eslint-disable-next-line
-// @ts-ignore
-const pages = import.meta.glob("/pages/**/*.{tsx,jsx}", { eager: true });
-
-type Route = {
-  page: PageModule;
-  match: {
-    pattern: RegExp;
-    names: string[];
-    types: string[];
-  };
-};
-
-const routes: Route[] = [];
-Object.entries(pages).forEach(([file, page]) => {
-  let route = file.substring("/pages".length, file.length - ".tsx".length);
-  if (route.endsWith("index"))
-    route = route.substring(0, route.length - "index".length);
-  else route += "/";
-  const item = {
-    match: parse_route_id(route),
-    page: page as PageModule,
-  };
-
-  routes.push(item);
-});
-
-export async function renderComponent(
+async function renderPage(
   path: string,
   params: Record<string, string>,
   page: PageModule,
-  exportMode: boolean
+  context: ServerRenderContextData,
 ) {
-  reset();
+  context.reset();
   let props: unknown | undefined;
   if (page.preload) {
     props = await page.preload(params);
   }
   const Content = page.default;
 
+  context.path = path;
   const body = renderToString(
-    <AppContext.Provider value={{ path }}>
+    <ServerRenderContext.Provider value={context}>
       <Layout>
         <Content page={props} />
       </Layout>
-    </AppContext.Provider>
+    </ServerRenderContext.Provider>,
   );
-  const head = Head.rewind(exportMode)
+  const head = Head.rewind()
     .map((n: VNode) => renderToString(n))
     .join("");
 
   return [head, body];
 }
 
-export async function render(url: string, exportMode = false) {
-  for (const route of routes) {
-    const matches = url.match(route.match.pattern);
-    if (!matches) continue;
+export default function createRenderer(
+  pages: Record<string, ComponentModule>,
+  islands: Record<string, ComponentModule>,
+) {
+  const context: ServerRenderContextData = {
+    islandsProps: [],
+    exportMode: false,
+    reset() {
+      this.islandsProps = [];
+    },
+    path: "",
+  };
 
-    const params = exec(matches, route.match.names);
-    return renderComponent(url, params, route.page, exportMode);
-  }
+  hook(islands, context);
 
-  return Promise.resolve(null);
+  const router = createRouter(pages);
+
+  return (url: string, exportMode = false) => {
+    const matched = router.find("GET", url);
+    if (!matched) {
+      return Promise.resolve(null);
+    }
+
+    const { handler, params, searchParams } = matched;
+    const store: { page?: PageModule } = {};
+    handler(null as any, null as any, params, store, searchParams);
+
+    if (!store.page) {
+      return null;
+    }
+
+    context.exportMode = exportMode;
+    return renderPage(
+      url,
+      params as Record<string, string>,
+      store.page,
+      context,
+    );
+  };
 }

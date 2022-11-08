@@ -1,0 +1,11 @@
+{
+  "formatter": {
+    "enabled": true,
+    "ignore": ["node_modules", "/**/dist"],
+    "indentStyle": "space"
+  },
+  "linter": {
+    "ignore": ["node_modules", "/**/dist"],
+    "enabled": true
+  }
+}
