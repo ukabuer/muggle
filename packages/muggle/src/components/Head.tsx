@@ -17,32 +17,42 @@ function unique() {
   const metaTypes: string[] = [];
   const metaCategories: Record<string, string[]> = {};
   return (h: ComponentChildren): h is AnyVNode => {
-    if (!isVNode(h)) return false;
+    if (!isVNode(h)) {
+      return false;
+    }
 
     switch (h.type) {
       case "title":
-      case "base":
-        if (~tags.indexOf(h.type)) return false;
+      case "base": {
+        if (~tags.indexOf(h.type)) {
+          return false;
+        }
         tags.push(h.type);
         break;
-      case "meta":
+      }
+      case "meta": {
         for (let i = 0, len = METATYPES.length; i < len; i += 1) {
           const metatype = METATYPES[i];
           if (!Object.prototype.hasOwnProperty.call(h.props, metatype)) {
             continue;
           }
           if (metatype === "charSet") {
-            if (~metaTypes.indexOf(metatype)) return false;
+            if (~metaTypes.indexOf(metatype)) {
+              return false;
+            }
             metaTypes.push(metatype);
           } else {
             const category = h.props[metatype];
             const categories = metaCategories[metatype] || [];
-            if (~categories.indexOf(category)) return false;
+            if (~categories.indexOf(category)) {
+              return false;
+            }
             categories.push(category);
             metaCategories[metatype] = categories;
           }
         }
         break;
+      }
       default:
         break;
     }
@@ -50,10 +60,7 @@ function unique() {
   };
 }
 
-function reducer(
-  components: Component["props"][],
-  exportMode = false
-): AnyVNode[] {
+function reducer(components: Component["props"][]): AnyVNode[] {
   const allChildren: ComponentChildren[] = [];
   for (const c of components) {
     if (c.children) {
@@ -89,11 +96,8 @@ function reducer(
 }
 
 export default class Head extends Component {
-  static rewind(exportMode: boolean) {
-    const state = reducer(
-      mounted.map((mount) => mount.props),
-      exportMode
-    );
+  static rewind() {
+    const state = reducer(mounted.map((mount) => mount.props));
     mounted = [];
     return state;
   }

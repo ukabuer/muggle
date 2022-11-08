@@ -3,5 +3,8 @@
   "workspaces": [
     "packages/muggle",
     "packages/muggle-site"
-  ]
+  ],
+  "devDependencies": {
+    "rome": "^10.0.1"
+  }
 }

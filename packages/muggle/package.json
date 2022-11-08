@@ -26,6 +26,7 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc -w",
+    "ci": "rome ci",
     "test:lint": "eslint . --max-warnings=0",
     "test:format": "prettier --check .",
     "test": "node--test dist/test",
@@ -37,6 +38,7 @@
   "license": "ISC",
   "dependencies": {
     "cac": "^6.7.3",
+    "find-my-way": "^7.3.1",
     "fs-extra": "^10.0.0",
     "polka": "^1.0.0-next.15",
     "preact-render-to-string": "^5.2.1",

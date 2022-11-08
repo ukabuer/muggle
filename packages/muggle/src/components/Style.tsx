@@ -1,5 +1,5 @@
 import { h, FunctionComponent } from "preact";
-import { IsDev } from "./config.js";
+import { useServerRenderContext } from "../context.js";
 
 type Props = {
   inline?: boolean;
@@ -7,9 +7,11 @@ type Props = {
 };
 
 const Style: FunctionComponent<Props> = (props: Props) => {
-  if (props.inline || IsDev) {
-    const css = props.children;
+  const { exportMode } = useServerRenderContext();
 
+  if (props.inline || !exportMode) {
+    const css = props.children;
+    // rome-ignore lint: need use dangerouslySetInnerHTML
     return <style dangerouslySetInnerHTML={{ __html: css }}></style>;
   }
 
