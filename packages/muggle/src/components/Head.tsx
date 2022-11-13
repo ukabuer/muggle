@@ -1,112 +1,82 @@
-import { Component, cloneElement, VNode, ComponentChildren } from "preact";
+import {
+  cloneElement,
+  VNode,
+  ComponentChildren,
+  FunctionComponent,
+} from "preact";
+import { useServerRenderContext } from "../context.js";
 
-type AnyVNode = VNode<any>; // eslint-disable-line
-
-const METATYPES = ["name", "httpEquiv", "charSet", "itemProp"];
-
-let mounted: Component[] = [];
-
-function isVNode(h: ComponentChildren): h is AnyVNode {
+function isVNode(h: ComponentChildren): h is VNode<unknown> {
   return !Array.isArray(h) && !!Object.getOwnPropertyDescriptor(h, "type");
 }
 
-// returns a function for filtering head child elements
-// which shouldn't be duplicated, like <title/>.
-function unique() {
-  const tags: string[] = [];
-  const metaTypes: string[] = [];
-  const metaCategories: Record<string, string[]> = {};
-  return (h: ComponentChildren): h is AnyVNode => {
-    if (!isVNode(h)) {
-      return false;
+const Head: FunctionComponent = ({ children }) => {
+  const { heads } = useServerRenderContext();
+
+  let nodes: ComponentChildren[] = [];
+  if (Array.isArray(children)) {
+    nodes = children;
+  } else if (children) {
+    nodes = [children];
+  }
+
+  for (const node of nodes) {
+    if (!isVNode(node)) {
+      continue;
     }
 
-    switch (h.type) {
-      case "title":
+    const type = node["type"];
+    if (typeof type !== "string") {
+      heads.others.push(node);
+      continue;
+    }
+
+    // some tags need to be unique
+    switch (type) {
+      case "title": {
+        heads.title = node;
+        break;
+      }
       case "base": {
-        if (~tags.indexOf(h.type)) {
-          return false;
-        }
-        tags.push(h.type);
+        heads.base = node;
         break;
       }
       case "meta": {
-        for (let i = 0, len = METATYPES.length; i < len; i += 1) {
-          const metatype = METATYPES[i];
-          if (!Object.prototype.hasOwnProperty.call(h.props, metatype)) {
-            continue;
-          }
-          if (metatype === "charSet") {
-            if (~metaTypes.indexOf(metatype)) {
-              return false;
-            }
-            metaTypes.push(metatype);
-          } else {
-            const category = h.props[metatype];
-            const categories = metaCategories[metatype] || [];
-            if (~categories.indexOf(category)) {
-              return false;
-            }
-            categories.push(category);
-            metaCategories[metatype] = categories;
-          }
+        const props = node.props as Record<string, unknown>;
+        if (props["charSet"]) {
+          heads.meta.charSet = node;
+        } else if (props["name"] && typeof props["name"] === "string") {
+          const name = props["name"];
+          heads.meta.others[name] = node;
+        } else {
+          heads.others.push(node);
         }
         break;
       }
-      default:
-        break;
-    }
-    return true;
-  };
-}
+      case "style":
+      case "script": {
+        if (
+          typeof node.props.children === "string" &&
+          !node.hasOwnProperty("dangerouslySetInnerHTML")
+        ) {
+          const newNode = cloneElement(node, {
+            dangerouslySetInnerHTML: {
+              __html: node.props.children,
+            },
+          });
+          heads.others.push(newNode);
+          break;
+        }
 
-function reducer(components: Component["props"][]): AnyVNode[] {
-  const allChildren: ComponentChildren[] = [];
-  for (const c of components) {
-    if (c.children) {
-      if (Array.isArray(c.children)) {
-        allChildren.push(...c.children);
-      } else {
-        allChildren.push(c.children);
+        heads.others.push(node);
+      }
+      default: {
+        heads.others.push(node);
       }
     }
   }
 
-  return allChildren
-    .reverse()
-    .filter(unique())
-    .reverse()
-    .map((c) => {
-      if (
-        typeof c.type === "string" &&
-        c.type === "style" &&
-        !("dangerouslySetInnerHTML" in c.props) &&
-        "children" in c.props &&
-        typeof c.props["children"] !== "object"
-      ) {
-        c.props["dangerouslySetInnerHTML"] = {
-          __html: String(c.props.children || ""),
-        };
-        c.props["children"] = null;
-      }
+  return null;
+};
 
-      return c;
-    })
-    .map((c) => cloneElement(c));
-}
-
-export default class Head extends Component {
-  static rewind() {
-    const state = reducer(mounted.map((mount) => mount.props));
-    mounted = [];
-    return state;
-  }
-
-  override componentWillMount() {
-    mounted.push(this);
-  }
-
-  render() {
-    return null;
-  }
-}
+export default Head;

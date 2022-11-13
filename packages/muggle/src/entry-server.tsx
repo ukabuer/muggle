@@ -1,9 +1,8 @@
-import { options, h, Fragment, ComponentType, VNode } from "preact";
+import { options, h, Fragment, ComponentType } from "preact";
 import renderToString from "preact-render-to-string";
 import { PageModule } from "./server.js";
 import { createRouter } from "./routing.js";
 import Layout from "./components/Layout.js";
-import Head from "./components/Head.js";
 import { ServerRenderContext, ServerRenderContextData } from "./context.js";
 
 export type ComponentModule = {
@@ -68,9 +67,15 @@ async function renderPage(
       </Layout>
     </ServerRenderContext.Provider>,
   );
-  const head = Head.rewind()
-    .map((n: VNode) => renderToString(n))
-    .join("");
+
+  let head = renderToString(
+    h("head", null, context.heads.title, context.heads.others),
+  );
+
+  // need optimization: heads need vite's entry script
+  const prefix = "<head>";
+  const postfix = "</head>";
+  head = head.substring(prefix.length, head.length - postfix.length);
 
   return [head, body];
 }
@@ -80,12 +85,30 @@ export default function createRenderer(
   islands: Record<string, ComponentModule>,
 ) {
   const context: ServerRenderContextData = {
-    islandsProps: [],
+    path: "",
     exportMode: false,
+    islandsProps: [],
+    heads: {
+      title: null,
+      base: null,
+      meta: {
+        charSet: null,
+        others: {},
+      },
+      others: [],
+    },
     reset() {
+      this.heads = {
+        title: null,
+        base: null,
+        meta: {
+          charSet: null,
+          others: {},
+        },
+        others: [],
+      };
       this.islandsProps = [];
     },
-    path: "",
   };
 
   hook(islands, context);
