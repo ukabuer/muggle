@@ -1,9 +1,8 @@
-import { extname } from "node:path";
 import FindMyWay from "find-my-way";
-import { PageModule } from "./server.js";
+import { PageModule } from "./render.js";
 
 export function transformPathToRoute(filepath: string): string {
-  const ext = extname(filepath);
+  const ext = filepath.substring(filepath.lastIndexOf("."));
   let route = filepath.substring(0, filepath.length - ext.length);
 
   if (!route.endsWith("/")) {

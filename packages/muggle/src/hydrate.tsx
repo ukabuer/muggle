@@ -1,5 +1,8 @@
-import { hydrate, h } from "preact";
-import { ComponentModule } from "./entry-server.js";
+import { hydrate, ComponentType, h } from "preact";
+
+export type ComponentModule = {
+  default: ComponentType<unknown>;
+};
 
 function error(reason: string, id: number, name?: string) {
   console.log(`Invalid component(id=${id}, name=${name}): ${reason}`);

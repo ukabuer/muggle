@@ -2,10 +2,9 @@ import fs from "fs/promises";
 import { resolve } from "node:path";
 import sirv from "sirv";
 import polka, { Polka } from "polka";
-import { ComponentType } from "preact";
 import { createServer } from "vite";
-import { createEntryScripts, getTemplateHTML } from "./prepare.js";
 import { Config } from "./export.js";
+import { createEntryScripts, getTemplateHTML } from "./prepare.js";
 
 interface DevConfig extends Config {
   port: number;
@@ -101,8 +100,3 @@ export async function startPreviewServer(config: DevConfig) {
     });
   });
 }
-
-export type PageModule = {
-  default: ComponentType<{ page?: unknown }>;
-  preload?: (params: Record<string, string>) => Promise<unknown>;
-};
