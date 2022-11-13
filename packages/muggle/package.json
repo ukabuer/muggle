@@ -10,13 +10,9 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
-    "./entry-server.js": {
-      "types": "./dist/entry-server.d.ts",
-      "import": "./dist/entry-server.js"
-    },
-    "./entry-client.js": {
-      "types": "./dist/entry-client.d.ts",
-      "import": "./dist/entry-client.js"
+    "./render": {
+      "types": "./dist/render.d.ts",
+      "import": "./dist/render.js"
     }
   },
   "type": "module",

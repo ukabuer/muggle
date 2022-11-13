@@ -24,7 +24,7 @@ export async function createEntryScripts(dir: string) {
   const writeEntryServer = fs.writeFile(
     entryServerPath,
     `
-import createRenderer from "muggle/entry-server.js";
+import createRenderer from "muggle/render";
 export const islands = import.meta.glob("/islands/**/*.{tsx,jsx}", { eager: true });
 export const pages = import.meta.glob("/pages/**/*.{tsx,jsx}", { eager: true });
 export const render = createRenderer(pages, islands);
@@ -35,9 +35,9 @@ export const render = createRenderer(pages, islands);
   const writeEntryClient = fs.writeFile(
     entryClientPath,
     `
-import hydate from "muggle/entry-client.js";
+import { hydrate } from "muggle";
 const islands = import.meta.glob("/islands/**/*.{tsx,jsx}", { eager: true });
-hydate(islands);
+hydrate(islands);
     `.trim(),
   );
 

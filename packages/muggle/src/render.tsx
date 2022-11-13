@@ -1,12 +1,13 @@
 import { options, h, Fragment, ComponentType } from "preact";
 import renderToString from "preact-render-to-string";
-import { PageModule } from "./server.js";
 import { createRouter } from "./routing.js";
+import { ComponentModule } from "./hydrate.js";
 import Layout from "./components/Layout.js";
 import { ServerRenderContext, ServerRenderContextData } from "./context.js";
 
-export type ComponentModule = {
-  default: ComponentType<unknown>;
+export type PageModule = {
+  default: ComponentType<{ page?: unknown }>;
+  preload?: (params: Record<string, string>) => Promise<unknown>;
 };
 
 export function hook(

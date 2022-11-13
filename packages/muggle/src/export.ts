@@ -1,9 +1,9 @@
+import { pathToFileURL } from "node:url";
+import { dirname, relative, resolve } from "node:path";
+import fs from "node:fs/promises";
 import fse from "fs-extra";
 import { build } from "vite";
-import { dirname, relative, resolve } from "node:path";
-import fs from "fs/promises";
 import { createEntryScripts, createEntryHtml } from "./prepare.js";
-import { pathToFileURL } from "url";
 import { transformPathToRoute } from "./routing.js";
 
 // from https://github.com/sveltejs/kit/blob/master/packages/kit/src/core/adapt/prerender.js
@@ -41,11 +41,7 @@ export async function compile(outDir: string, tempDir: string) {
         fileName: "entry-server",
       },
       rollupOptions: {
-        external: [
-          "muggle",
-          "muggle/entry-server.js",
-          "muggle/entry-client.js",
-        ],
+        external: ["muggle", "muggle/render"],
       },
       minify: false,
       ssr: true,
@@ -57,7 +53,7 @@ export async function compile(outDir: string, tempDir: string) {
   const compiler = await build({
     mode: "production",
     publicDir: false,
-    logLevel: "warn",
+    // logLevel: "warn",
     build: {
       rollupOptions: {
         input: entryHTMLPath,
@@ -78,6 +74,7 @@ export async function compile(outDir: string, tempDir: string) {
     resolve(tempDir, "./style.css"),
     resolve(outDir, "./assets/style.css"),
   );
+  await fs.rm(resolve(outDir, "./dist"), { recursive: true });
 
   if ("addListener" in compiler) {
     return new Promise((resolve, reject) => {

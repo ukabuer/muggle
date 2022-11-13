@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 import fs from "node:fs/promises";
+import { resolve } from "node:path";
 import cac from "cac";
 import startExport from "./export.js";
 import { startDevServer, startPreviewServer } from "./server.js";
-import { resolve } from "node:path";
 
 const cli = cac();
 
