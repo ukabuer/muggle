@@ -15,7 +15,8 @@
   "license": "ISC",
   "dependencies": {
     "muggle": "file:../muggle",
-    "preact": "^10.10.6"
+    "preact": "^10.10.6",
+    "sass": "^1.58.2"
   },
   "devDependencies": {
     "@types/node": "^18.7.13"

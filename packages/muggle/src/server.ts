@@ -48,13 +48,14 @@ export async function startDevServer(config: DevConfig): Promise<Polka> {
     try {
       const template = await vite.transformIndexHtml(url, originHtml);
       const { render } = await vite.ssrLoadModule(entryScripts.server);
+      // TODO: type for render data
       const rendered = (await render(url, false)) as null | string[];
       if (!rendered) {
         res.writeHead(404, { "Content-Type": "text/plain" });
         res.end("Not Found.");
         return;
       }
-      const [head, body] = rendered;
+      const [head, _, body] = rendered;
       let html = template.replace("<!-- HEAD -->", head);
       html = html.replace("<main></main>", body);
 

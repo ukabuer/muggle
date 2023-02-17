@@ -1,18 +1,32 @@
 import { h, FunctionalComponent } from "preact";
-import { Head, Style } from "muggle";
-import css from "./style.css";
+import { Head, Style, useServerRenderContext } from "muggle";
+import css from "./style.css?inline";
 
 const Header: FunctionalComponent = () => {
+  const { path } = useServerRenderContext();
+
+  const navs = [
+    { path: "/", title: "Home" },
+    { path: "/about/", title: "About" },
+    { path: "/jsx/", title: "Jsx Test" },
+    { path: "/blog/1/", title: "Post 1" },
+    { path: "/blog/2/", title: "Post 2" },
+  ];
+
   return (
     <header>
       <Head>
         <Style>{css}</Style>
       </Head>
-      <a href="/">Index</a>
-      <a href="/about/">About</a>
-      <a href="/jsx/">Jsx Test</a>
-      <a href="/blog/1/">Post 1</a>
-      <a href="/blog/2/">Post 2</a>
+      {navs.map((nav) => (
+        <a
+          id={nav.path}
+          href={nav.path}
+          className={path === nav.path ? "active" : undefined}
+        >
+          {nav.title}
+        </a>
+      ))}
     </header>
   );
 };

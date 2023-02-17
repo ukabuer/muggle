@@ -20,7 +20,7 @@ const PostPage: FunctionComponent<Props> = ({ page }: Props) => (
 export async function preload(params: Record<string, string>) {
   return new Promise((resolve) => {
     setTimeout(() => {
-      resolve("This is post " + params["post"]);
+      resolve(`This is post ${params["post"]}`);
     }, 100);
   });
 }

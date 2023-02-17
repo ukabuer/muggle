@@ -3,6 +3,7 @@ import { dirname, relative, resolve } from "node:path";
 import fs from "node:fs/promises";
 import fse from "fs-extra";
 import { build } from "vite";
+import { transform } from "esbuild";
 import { createEntryScripts, createEntryHtml } from "./prepare.js";
 import { transformPathToRoute } from "./routing.js";
 
@@ -70,29 +71,32 @@ export async function compile(outDir: string, tempDir: string) {
     resolve(outDir, relative(".", tempDir), "./app.html"),
     resolve(tempDir, "./index.html"),
   );
-  await fs.copyFile(
-    resolve(tempDir, "./style.css"),
-    resolve(outDir, "./assets/style.css"),
-  );
+  if (fse.existsSync(resolve(tempDir, "./style.css"))) {
+    await fs.copyFile(
+      resolve(tempDir, "./style.css"),
+      resolve(outDir, "./assets/style.css"),
+    );
+  }
   await fs.rm(resolve(outDir, "./dist"), { recursive: true });
 
-  if ("addListener" in compiler) {
-    return new Promise((resolve, reject) => {
-      compiler.addListener("event", (event) => {
-        if (event.code === "BUNDLE_END") {
-          resolve(true);
-          compiler.removeAllListeners();
-          return;
-        }
+  return true;
+  // if (compiler) {
+  //   return new Promise((resolve, reject) => {
+  //     compiler.addListener("event", (event) => {
+  //       if (event.code === "BUNDLE_END") {
+  //         resolve(true);
+  //         compiler.removeAllListeners();
+  //         return;
+  //       }
 
-        if (event.code === "ERROR") {
-          reject(event.error);
-          compiler.removeAllListeners();
-          return;
-        }
-      });
-    });
-  }
+  //       if (event.code === "ERROR") {
+  //         reject(event.error);
+  //         compiler.removeAllListeners();
+  //         return;
+  //       }
+  //     });
+  //   });
+  // }
 }
 
 export interface Config {
@@ -129,17 +133,26 @@ async function startExport(config: Config) {
 
   const unresolved: string[] = [...routes];
   const resolved = new Set();
+
+  // OPTIMIZE: find pages' shared & private styles, bundle shared part & inline private ones
+  let allPageStyles = "";
+  const existStyleIds = new Set();
+
   while (unresolved.length > 0) {
     const url = unresolved.shift();
     if (!url || resolved.has(url)) {
       continue;
     }
 
-    const rendered = (await render(url, true)) as null | string[];
+    // TODO: type for render data
+    const rendered = (await render(url, true)) as
+      | null
+      | [string, { map: Map<string, string>; order: string[] }, string];
+
     if (!rendered) {
       continue;
     }
-    const [head, body] = rendered;
+    const [head, styles, body] = rendered;
     const bundle = '<link href="/assets/style.css" rel="stylesheet" />';
     let html = template.replace("<!-- HEAD -->", head + bundle);
     html = html.replace("<main></main>", body);
@@ -153,6 +166,13 @@ async function startExport(config: Config) {
       .then(() => fs.writeFile(file, html))
       .then(() => url);
     writeTasks.push(writeTask);
+
+    styles.order.forEach((id) => {
+      if (!existStyleIds.has(id)) {
+        existStyleIds.add(id);
+        allPageStyles += styles.map.get(id);
+      }
+    });
 
     const cleaned = cleanHtml(html);
     const pattern = /<(a|link|)\s+([\s\S]+?)>/gm;
@@ -174,6 +194,12 @@ async function startExport(config: Config) {
     }
     resolved.add(url);
   }
+
+  const { code: minifiedCSS } = await transform(allPageStyles, {
+    loader: "css",
+    minify: true,
+  });
+  await fs.writeFile(resolve(outDir, "assets/style.css"), minifiedCSS);
 
   const urls = await Promise.all(writeTasks);
   console.log("HTML exported:", urls);
