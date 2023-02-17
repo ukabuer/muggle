@@ -70,7 +70,9 @@ async function renderPage(
   );
 
   let head = renderToString(
-    h("head", null, context.heads.title, context.heads.others),
+    <ServerRenderContext.Provider value={context}>
+      {h("head", null, context.heads.title, context.heads.others)}
+    </ServerRenderContext.Provider>,
   );
 
   // need optimization: heads need vite's entry script
