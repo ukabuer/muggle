@@ -1,8 +1,9 @@
 import { h, FunctionComponent } from "preact";
-import { Head } from "muggle";
+import { Head, Style } from "muggle";
 import Header from "../components/Header";
 import Counter from "../islands/Counter";
 import { randomUUID } from "node:crypto";
+import css from "./style.scss?inline";
 
 type Props = {
   page: string;
@@ -12,6 +13,7 @@ const IndexPage: FunctionComponent<Props> = ({ page }: Props) => (
   <div>
     <Head>
       <title>Index Page</title>
+      <Style>{css}</Style>
     </Head>
     <Header />
     <p>This is index page</p>

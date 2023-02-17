@@ -14,27 +14,22 @@ export type ServerRenderContextData = {
     };
     others: VNode[];
   };
+  styles: Map<string, string>;
+  stylesOrder: string[];
   reset: () => void;
+  addStyle: (id: string, style: string) => void;
 };
 
-const ServerRenderContext = createContext<ServerRenderContextData>({
-  path: "",
-  exportMode: false,
-  islandsProps: [],
-  heads: {
-    title: null,
-    base: null,
-    meta: {
-      charSet: null,
-      others: {},
-    },
-    others: [],
-  },
-  reset: () => {},
-});
+const ServerRenderContext = createContext<ServerRenderContextData | undefined>(
+  undefined,
+);
 
 function useServerRenderContext() {
-  return useContext(ServerRenderContext);
+  const context = useContext(ServerRenderContext);
+  if (!context) {
+    throw new Error("useServerRenderContext must be used within a Provider");
+  }
+  return context;
 }
 
 export { ServerRenderContext, useServerRenderContext };

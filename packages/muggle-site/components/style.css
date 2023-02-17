@@ -20,3 +20,11 @@ header a::after {
 header a:hover::after {
   transform: translateX(calc(100% + 5px));
 }
+
+header a.active {
+  font-style: italic;
+}
+
+header a.active:hover::after {
+  transform: none;
+}

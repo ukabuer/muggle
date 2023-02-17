@@ -75,12 +75,17 @@ async function renderPage(
     </ServerRenderContext.Provider>,
   );
 
-  // need optimization: heads need vite's entry script
+  // REVIEW: heads need vite's entry script?
   const prefix = "<head>";
   const postfix = "</head>";
   head = head.substring(prefix.length, head.length - postfix.length);
 
-  return [head, body];
+  const styles = {
+    order: context.stylesOrder,
+    map: context.styles,
+  };
+
+  return [head, styles, body];
 }
 
 export default function createRenderer(
@@ -100,6 +105,8 @@ export default function createRenderer(
       },
       others: [],
     },
+    styles: new Map(),
+    stylesOrder: [],
     reset() {
       this.heads = {
         title: null,
@@ -111,6 +118,14 @@ export default function createRenderer(
         others: [],
       };
       this.islandsProps = [];
+      this.styles.clear();
+      this.stylesOrder = [];
+    },
+    addStyle(id, style) {
+      if (!this.styles.has(id)) {
+        this.stylesOrder.push(id);
+      }
+      this.styles.set(id, style);
     },
   };
 
