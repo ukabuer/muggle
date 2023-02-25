@@ -45,7 +45,6 @@
   "devDependencies": {
     "@types/fs-extra": "^9.0.12",
     "@types/node": "^18.7.13",
-    "prettier": "^2.7.1",
     "test": "^3.2.1"
   },
   "peerDependencies": {
@@ -54,7 +53,5 @@
   "engines": {
     "node": ">=14"
   },
-  "files": [
-    "dist/**/*"
-  ]
+  "files": ["dist/**/*"]
 }

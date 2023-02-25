@@ -1,9 +1,9 @@
 import { h, FunctionalComponent } from "preact";
-import { Head, Style, useServerRenderContext } from "muggle";
+import { Head, Style, useAppContext } from "muggle";
 import * as styles from "./header.css.js";
 
 const Header: FunctionalComponent = () => {
-  const { path } = useServerRenderContext();
+  const { path } = useAppContext();
 
   const navs = [
     { path: "/", title: "Home" },

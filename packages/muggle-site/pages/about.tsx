@@ -1,15 +1,14 @@
 import { h, FunctionComponent } from "preact";
 import { Head } from "muggle";
-import Header from "../components/Header";
+import Layout from "../components/Layout";
 
 const AboutPage: FunctionComponent = () => (
-  <div>
+  <Layout>
     <Head>
       <title>About Page</title>
     </Head>
-    <Header />
     <p>This is about page.</p>
-  </div>
+  </Layout>
 );
 
 export default AboutPage;
