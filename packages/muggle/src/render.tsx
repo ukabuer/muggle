@@ -1,9 +1,13 @@
-import { options, h, Fragment, ComponentType } from "preact";
+import { options, h, Fragment, ComponentType, FunctionComponent } from "preact";
 import renderToString from "preact-render-to-string";
 import { createRouter } from "./routing.js";
 import { ComponentModule } from "./hydrate.js";
-import Layout from "./components/Layout.js";
-import { ServerRenderContext, ServerRenderContextData } from "./context.js";
+import {
+  ServerRenderContext,
+  ServerRenderContextData,
+  useServerRenderContext,
+} from "./context.js";
+import { AppContext } from "./client.js";
 
 export type CustomRenderFn = (
   params: Record<string, string>,
@@ -49,10 +53,16 @@ export function hook(
         vnode.type = (props) => {
           ignoreNext = true;
           context.islandsProps.push(props);
-          const id = context.islandsProps.length - 1;
+          const component = island[0];
+          const index = context.islandsProps.length - 1;
+          const id = `${component}-${index}`;
           return (
             <>
-              <script data-muggle-id={id} data-muggle-component={island[0]} />
+              <script
+                data-muggle-id={id}
+                data-component={component}
+                data-index={index}
+              />
               <OriginalType {...props} />
               <script data-muggle-end-id={id} />
             </>
@@ -65,6 +75,20 @@ export function hook(
     }
   };
 }
+
+export const Scripts: FunctionComponent = () => {
+  const { islandsProps } = useServerRenderContext();
+  return (
+    <script
+      id="__MUGGLE_ISLAND_PROPS"
+      type="application/json"
+      // rome-ignore lint: need use dangerouslySetInnerHTML
+      dangerouslySetInnerHTML={{
+        __html: JSON.stringify(islandsProps),
+      }}
+    />
+  );
+};
 
 async function renderPage(
   path: string,
@@ -82,15 +106,15 @@ async function renderPage(
   context.path = path;
   const body = renderToString(
     <ServerRenderContext.Provider value={context}>
-      <Layout>
+      <AppContext.Provider value={{ path, loading: false }}>
         <Content page={props} />
-      </Layout>
+      </AppContext.Provider>
     </ServerRenderContext.Provider>,
   );
 
   let head = renderToString(
     <ServerRenderContext.Provider value={context}>
-      {h("head", null, context.heads.title, context.heads.others)}
+      {h("head", null, context.heads.title, context.heads.others, <Scripts />)}
     </ServerRenderContext.Provider>,
   );
 
@@ -177,6 +201,7 @@ export default function createRenderer(
 
     const { handler, params, searchParams } = matched;
     const store: { customExt?: string; page?: PageModule } = {};
+    // rome-ignore lint/suspicious/noExplicitAny: fake req/res
     handler(null as any, null as any, params, store, searchParams);
 
     if (!store.page) {

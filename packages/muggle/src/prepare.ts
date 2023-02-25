@@ -6,7 +6,7 @@ export function getTemplateHTML() {
 <!DOCTYPE html>
 <html lang="en">
   <head><!-- HEAD --></head>
-  <body data-barba="wrapper">
+  <body>
     <main></main>
     <script type="module" src="/dist/.temp/entry-client.js"></script>
   </body>
@@ -35,9 +35,10 @@ export const render = createRenderer(pages, islands);
   const writeEntryClient = fs.writeFile(
     entryClientPath,
     `
-import { hydrate } from "muggle";
+import { hydrate, enablePJAX } from "muggle";
 const islands = import.meta.glob("/islands/**/*.{tsx,jsx}", { eager: true });
 hydrate(islands);
+enablePJAX(islands);
     `.trim(),
   );
 

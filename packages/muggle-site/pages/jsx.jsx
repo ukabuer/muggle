@@ -1,15 +1,14 @@
 import { h } from "preact";
 import { Head } from "muggle";
-import Header from "../components/Header";
+import Layout from '../components/Layout';
 
 const JsxPage = () => (
-  <div>
-    <Head>
-      <title>Jsx test Page</title>
-    </Head>
-    <Header />
-    <p>This is a .jsx file test page</p>
-  </div>
+  <Layout>
+      <Head>
+        <title>Jsx test Page</title>
+      </Head>
+      <p>This is a .jsx file test page</p>
+  </Layout>
 );
 
 export default JsxPage;

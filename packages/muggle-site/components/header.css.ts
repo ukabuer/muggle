@@ -3,7 +3,7 @@ import { style } from "@vanilla-extract/css";
 export const link = style({
   position: "relative",
   display: "inline-block",
-  margin: "0 12px",
+  margin: 12,
   textDecoration: "none",
   color: "black",
   overflow: "hidden",

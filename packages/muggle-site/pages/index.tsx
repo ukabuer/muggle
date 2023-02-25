@@ -1,21 +1,20 @@
 import { h, FunctionComponent } from "preact";
 import { Head, Style } from "muggle";
-import Header from "../components/Header";
 import Counter from "../islands/Counter";
 import { randomUUID } from "node:crypto";
 import css from "./style.scss?inline";
+import Layout from "../components/Layout";
 
 type Props = {
   page: string;
 };
 
 const IndexPage: FunctionComponent<Props> = ({ page }: Props) => (
-  <div>
+  <Layout>
     <Head>
       <title>Index Page</title>
       <Style>{css}</Style>
     </Head>
-    <Header />
     <p>This is index page</p>
     <p>Async data: {page}</p>
     <p>Random UUID using `node:crypto`: {randomUUID()}</p>
@@ -23,7 +22,7 @@ const IndexPage: FunctionComponent<Props> = ({ page }: Props) => (
       <span>An interactive counter: </span>
       <Counter initial={0} />
     </div>
-  </div>
+  </Layout>
 );
 
 export async function preload() {

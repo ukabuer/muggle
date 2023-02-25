@@ -1,20 +1,19 @@
 import { h, FunctionComponent } from "preact";
 import { Head } from "muggle";
-import Header from "../../components/Header";
+import Layout from "../../components/Layout";
 
 type Props = {
   page: string;
 };
 
 const PostPage: FunctionComponent<Props> = ({ page }: Props) => (
-  <div>
+  <Layout>
     <Head>
       <title>Post Page</title>
     </Head>
-    <Header />
     <p>Dynamic url params test.</p>
     <p>{page}</p>
-  </div>
+  </Layout>
 );
 
 export async function preload(params: Record<string, string>) {

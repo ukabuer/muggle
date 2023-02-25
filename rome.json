@@ -1,11 +1,15 @@
 {
   "formatter": {
     "enabled": true,
-    "ignore": ["node_modules", "/packages/muggle/dist/", "/packages/muggle-site/dist/"],
+    "ignore": [
+      "node_modules", "/packages/muggle/dist/", "/packages/muggle-site/dist/"
+    ],
     "indentStyle": "space"
   },
   "linter": {
-    "ignore": ["node_modules", "/packages/muggle/dist/", "/packages/muggle-site/dist/"],
+    "ignore": [
+      "node_modules", "/packages/muggle/dist/", "/packages/muggle-site/dist/"
+    ],
     "enabled": true
   }
 }
