@@ -5,10 +5,17 @@ import polka, { Polka } from "polka";
 import { createServer } from "vite";
 import { Config } from "./export.js";
 import { createEntryScripts, getTemplateHTML } from "./prepare.js";
+import { RenderResult } from "./render.js";
 
 interface DevConfig extends Config {
   port: number;
 }
+
+const CustomTypeToContentType: Record<string, string> = {
+  ".html": "text/html",
+  ".xml": "application/xml",
+  ".json": "application/json",
+};
 
 export async function startDevServer(config: DevConfig): Promise<Polka> {
   const outDir = config.out.endsWith("/") ? config.out : `${config.out}/`;
@@ -49,18 +56,24 @@ export async function startDevServer(config: DevConfig): Promise<Polka> {
       const template = await vite.transformIndexHtml(url, originHtml);
       const { render } = await vite.ssrLoadModule(entryScripts.server);
       // TODO: type for render data
-      const rendered = (await render(url, false)) as null | string[];
+      const rendered = (await render(url, false)) as RenderResult;
       if (!rendered) {
         res.writeHead(404, { "Content-Type": "text/plain" });
         res.end("Not Found.");
         return;
       }
-      const [head, _, body] = rendered;
-      let html = template.replace("<!-- HEAD -->", head);
-      html = html.replace("<main></main>", body);
 
-      res.writeHead(200, { "Content-Type": "text/html" });
-      res.end(html);
+      if (rendered.custom) {
+        res.writeHead(200);
+        res.end(rendered.content);
+      } else {
+        const [head, _, body] = rendered.content;
+        let html = template.replace("<!-- HEAD -->", head);
+        html = html.replace("<main></main>", body);
+
+        res.writeHead(200, { "Content-Type": "text/html" });
+        res.end(html);
+      }
     } catch (e: unknown) {
       if (e instanceof Error) {
         console.log(e);

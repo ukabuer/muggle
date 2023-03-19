@@ -5,10 +5,29 @@ import { ComponentModule } from "./hydrate.js";
 import Layout from "./components/Layout.js";
 import { ServerRenderContext, ServerRenderContextData } from "./context.js";
 
+export type CustomRenderFn = (
+  params: Record<string, string>,
+  context: ServerRenderContextData,
+  data: unknown,
+) => Promise<string>;
+
 export type PageModule = {
-  default: ComponentType<{ page?: unknown }>;
+  default: ComponentType<{ page?: unknown }> | CustomRenderFn;
   preload?: (params: Record<string, string>) => Promise<unknown>;
 };
+
+export type RenderedStyle = { map: Map<string, string>; order: string[] };
+
+export type RenderResult =
+  | null
+  | {
+      custom: false;
+      content: [string, RenderedStyle, string];
+    }
+  | {
+      custom: true;
+      content: string;
+    };
 
 export function hook(
   islands: Record<string, ComponentModule>,
@@ -52,13 +71,13 @@ async function renderPage(
   params: Record<string, string>,
   page: PageModule,
   context: ServerRenderContextData,
-) {
+): Promise<[string, RenderedStyle, string]> {
   context.reset();
   let props: unknown | undefined;
   if (page.preload) {
     props = await page.preload(params);
   }
-  const Content = page.default;
+  const Content = page.default as ComponentType<{ page?: unknown }>;
 
   context.path = path;
   const body = renderToString(
@@ -86,6 +105,23 @@ async function renderPage(
   };
 
   return [head, styles, body];
+}
+
+async function renderCustomPage(
+  path: string,
+  params: Record<string, string>,
+  page: PageModule,
+  context: ServerRenderContextData,
+): Promise<string> {
+  const render = page.default as CustomRenderFn;
+
+  context.reset();
+  let props: unknown | undefined;
+  if (page.preload) {
+    props = await page.preload(params);
+  }
+
+  return render(params, context, props);
 }
 
 export default function createRenderer(
@@ -133,26 +169,42 @@ export default function createRenderer(
 
   const router = createRouter(pages);
 
-  return (url: string, exportMode = false) => {
+  return async (url: string, exportMode = false): Promise<RenderResult> => {
     const matched = router.find("GET", url);
     if (!matched) {
-      return Promise.resolve(null);
+      return null;
     }
 
     const { handler, params, searchParams } = matched;
-    const store: { page?: PageModule } = {};
+    const store: { customExt?: string; page?: PageModule } = {};
     handler(null as any, null as any, params, store, searchParams);
 
     if (!store.page) {
       return null;
     }
 
+    if (store.customExt) {
+      return {
+        custom: true,
+        content: await renderCustomPage(
+          url,
+          params as Record<string, string>,
+          store.page,
+          context,
+        ),
+      };
+    }
+
     context.exportMode = exportMode;
-    return renderPage(
+    const content = await renderPage(
       url,
       params as Record<string, string>,
       store.page,
       context,
     );
+    return {
+      custom: false,
+      content,
+    };
   };
 }
