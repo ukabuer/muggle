@@ -25,8 +25,8 @@ export async function createEntryScripts(dir: string) {
     entryServerPath,
     `
 import createRenderer from "muggle/render";
-export const islands = import.meta.glob("/islands/**/*.{tsx,jsx}", { eager: true });
-export const pages = import.meta.glob("/pages/**/*.{tsx,jsx}", { eager: true });
+export const islands = import.meta.glob("/islands/**/*.{tsx,jsx,ts,js}", { eager: true });
+export const pages = import.meta.glob("/pages/**/*.{tsx,jsx,ts,js}", { eager: true });
 export const render = createRenderer(pages, islands);
     `.trim(),
   );

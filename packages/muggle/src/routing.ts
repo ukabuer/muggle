@@ -1,11 +1,13 @@
+import path from "node:path";
 import FindMyWay from "find-my-way";
 import { PageModule } from "./render.js";
 
 export function transformPathToRoute(filepath: string): string {
-  const ext = filepath.substring(filepath.lastIndexOf("."));
+  const ext = path.extname(filepath);
   let route = filepath.substring(0, filepath.length - ext.length);
 
-  if (!route.endsWith("/")) {
+  const customExt = path.extname(route);
+  if (!(customExt || route.endsWith("/"))) {
     route += "/";
   }
 
@@ -30,9 +32,12 @@ export function createRouter(pages: Record<string, PageModule>) {
 
   Object.entries(pages).forEach(([filepath, page]) => {
     const route = transformPathToRoute(filepath);
+    const customExt = path.extname(route);
 
+    // TODO: type ctx
     router.get(route, (_req, _res, _params, ctx) => {
       if (ctx) {
+        ctx.customExt = customExt;
         ctx.page = page;
       }
     });

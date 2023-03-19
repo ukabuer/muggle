@@ -6,6 +6,7 @@ import { build } from "vite";
 import { transform } from "esbuild";
 import { createEntryScripts, createEntryHtml } from "./prepare.js";
 import { transformPathToRoute } from "./routing.js";
+import { RenderResult } from "./render.js";
 
 // from https://github.com/sveltejs/kit/blob/master/packages/kit/src/core/adapt/prerender.js
 export function cleanHtml(html: string) {
@@ -145,14 +146,25 @@ async function startExport(config: Config) {
     }
 
     // TODO: type for render data
-    const rendered = (await render(url, true)) as
-      | null
-      | [string, { map: Map<string, string>; order: string[] }, string];
+    const rendered = (await render(url, true)) as RenderResult;
 
     if (!rendered) {
       continue;
     }
-    const [head, styles, body] = rendered;
+
+    if (rendered.custom) {
+      const file = resolve(outDir, `.${url}`);
+      const dir = dirname(file);
+      const writeTask = fs
+        .mkdir(dir, { recursive: true })
+        .then(() => fs.writeFile(file, rendered.content))
+        .then(() => url);
+      writeTasks.push(writeTask);
+      resolved.add(url);
+      return;
+    }
+
+    const [head, styles, body] = rendered.content;
     const bundle = '<link href="/assets/style.css" rel="stylesheet" />';
     let html = template.replace("<!-- HEAD -->", head + bundle);
     html = html.replace("<main></main>", body);
