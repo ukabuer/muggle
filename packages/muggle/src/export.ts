@@ -161,7 +161,7 @@ async function startExport(config: Config) {
         .then(() => url);
       writeTasks.push(writeTask);
       resolved.add(url);
-      return;
+      continue;
     }
 
     const [head, styles, body] = rendered.content;
