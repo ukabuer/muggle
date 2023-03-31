@@ -6,7 +6,7 @@ import { createServer } from "vite";
 import { Config } from "./export.js";
 import { createEntryScripts, getTemplateHTML } from "./prepare.js";
 import { RenderResult } from "./render.js";
-
+import { vanillaExtractPlugin } from "./plugins/vanilla-extract.js";
 interface DevConfig extends Config {
   port: number;
 }
@@ -44,6 +44,7 @@ export async function startDevServer(config: DevConfig): Promise<Polka> {
     resolve: {
       dedupe: ["preact"],
     },
+    plugins: [vanillaExtractPlugin()],
     ssr: {},
     appType: "custom",
   });
