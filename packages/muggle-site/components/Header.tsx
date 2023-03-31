@@ -1,6 +1,6 @@
 import { h, FunctionalComponent } from "preact";
 import { Head, Style, useServerRenderContext } from "muggle";
-import css from "./style.css?inline";
+import * as styles from "./header.css.js";
 
 const Header: FunctionalComponent = () => {
   const { path } = useServerRenderContext();
@@ -16,13 +16,13 @@ const Header: FunctionalComponent = () => {
   return (
     <header>
       <Head>
-        <Style>{css}</Style>
+        <Style>{styles.default}</Style>
       </Head>
       {navs.map((nav) => (
         <a
           id={nav.path}
           href={nav.path}
-          className={path === nav.path ? "active" : undefined}
+          className={path === nav.path ? styles.actvieLink : styles.link}
         >
           {nav.title}
         </a>

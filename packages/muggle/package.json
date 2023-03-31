@@ -33,6 +33,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@vanilla-extract/integration": "^6.2.1",
     "cac": "^6.7.3",
     "esbuild": "^0.16.17",
     "find-my-way": "^7.3.1",

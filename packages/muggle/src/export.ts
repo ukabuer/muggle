@@ -7,6 +7,7 @@ import { transform } from "esbuild";
 import { createEntryScripts, createEntryHtml } from "./prepare.js";
 import { transformPathToRoute } from "./routing.js";
 import { RenderResult } from "./render.js";
+import { vanillaExtractPlugin } from "./plugins/vanilla-extract.js";
 
 // from https://github.com/sveltejs/kit/blob/master/packages/kit/src/core/adapt/prerender.js
 export function cleanHtml(html: string) {
@@ -35,6 +36,7 @@ export async function compile(outDir: string, tempDir: string) {
     mode: "production",
     publicDir: false,
     logLevel: "warn",
+    plugins: [vanillaExtractPlugin()],
     build: {
       lib: {
         entry: entryScripts.server,
@@ -124,10 +126,11 @@ async function startExport(config: Config) {
   const entryServer = pathToFileURL(
     resolve(tempDir, "entry-server.js"),
   ).toString();
+  // TODO: typing
   const { pages, render } = await import(entryServer);
   const routes = Object.keys(pages)
     .map(transformPathToRoute)
-    .filter((route) => !route.includes(":"));
+    .filter((route) => !(route.includes(":") || route.endsWith(".css")));
   console.log("Initial page routes: ", routes);
 
   const writeTasks: Promise<string>[] = [];
