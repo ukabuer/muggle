@@ -1,12 +1,3 @@
-## TODO
-
-- [x] Export to HTML
-- [x] Remove useless files & add CI
-- [ ] Test on jsx/tsx project
-- [ ] Rewrite Head for server
-- [ ] Export connect middleware
-- [ ] Builin PJAX
-
 ## Muggle
 
 An unambitious static site generator, no magic inside.
