@@ -231,6 +231,7 @@ export function enablePJAX(islands: Record<string, ComponentModule>) {
     } else {
       wrapper = parent.appendChild(newContent);
     }
+    window.scrollTo(0, 0);
 
     // merge new scripts
     mergeHeadItems("script");
