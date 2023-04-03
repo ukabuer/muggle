@@ -69,6 +69,7 @@ const Head: FunctionComponent = ({ children }) => {
         }
 
         heads.others.push(node);
+        break;
       }
       default: {
         heads.others.push(node);

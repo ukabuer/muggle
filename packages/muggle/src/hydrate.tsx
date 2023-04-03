@@ -135,6 +135,16 @@ let HTMLParser: DOMParser | null = null;
 
 const PJAXWrapperSelector = "[data-pjax-wrapper]";
 
+function cloneScriptTag(node: Element) {
+  const newTag = document.createElement("script");
+  for (let i = 0; i < node.attributes.length; i++) {
+    const attr = node.attributes[i];
+    newTag.setAttribute(attr.nodeName, attr.nodeValue || "");
+  }
+  newTag.innerHTML = node.innerHTML;
+  return newTag;
+}
+
 export function enablePJAX(islands: Record<string, ComponentModule>) {
   let loading = false;
   let leaving = false;
@@ -192,10 +202,20 @@ export function enablePJAX(islands: Record<string, ComponentModule>) {
       newItems.forEach((newItem) => {
         for (const existItem of existItems) {
           if (existItem.outerHTML === newItem.outerHTML) {
+            if ((existItem as HTMLElement).dataset.pjaxReload !== undefined) {
+              // force reload
+              existItem.parentNode?.replaceChild(
+                cloneScriptTag(newItem),
+                existItem,
+              );
+            }
             return;
           }
         }
 
+        if (tag === "script") {
+          newItem = cloneScriptTag(newItem);
+        }
         document.head.appendChild(newItem);
       });
     }
