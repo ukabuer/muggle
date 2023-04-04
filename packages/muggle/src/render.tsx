@@ -114,7 +114,16 @@ async function renderPage(
 
   let head = renderToString(
     <ServerRenderContext.Provider value={context}>
-      {h("head", null, context.heads.title, context.heads.others, <Scripts />)}
+      {h(
+        "head",
+        null,
+        context.heads.title,
+        context.heads.base,
+        context.heads.meta.charSet,
+        Object.values(context.heads.meta.others),
+        context.heads.others,
+        <Scripts />,
+      )}
     </ServerRenderContext.Provider>,
   );
 

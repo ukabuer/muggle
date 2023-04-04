@@ -43,7 +43,7 @@ const Head: FunctionComponent = ({ children }) => {
       }
       case "meta": {
         const props = node.props as Record<string, unknown>;
-        if (props["charSet"]) {
+        if (props["charSet"] || props["charset"]) {
           heads.meta.charSet = node;
         } else if (props["name"] && typeof props["name"] === "string") {
           const name = props["name"];
