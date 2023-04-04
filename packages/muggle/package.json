@@ -1,6 +1,6 @@
 {
   "name": "muggle",
-  "version": "0.11.0",
+  "version": "0.11.1",
   "description": "",
   "bin": {
     "muggle": "dist/cli.js"
@@ -53,7 +53,5 @@
   "engines": {
     "node": ">=14"
   },
-  "files": [
-    "dist/**/*"
-  ]
+  "files": ["dist/**/*"]
 }
