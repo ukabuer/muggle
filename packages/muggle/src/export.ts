@@ -58,6 +58,7 @@ export async function compile(outDir: string, tempDir: string) {
     mode: "production",
     publicDir: false,
     // logLevel: "warn",
+    plugins: [vanillaExtractPlugin()],
     build: {
       rollupOptions: {
         input: entryHTMLPath,
