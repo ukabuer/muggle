@@ -1,7 +1,6 @@
 import { pathToFileURL } from "node:url";
 import { dirname, relative, resolve } from "node:path";
 import fs from "node:fs/promises";
-import fse from "fs-extra";
 import { build } from "vite";
 import { transform } from "esbuild";
 import { createEntryScripts, createEntryHtml } from "./prepare.js";
@@ -14,6 +13,28 @@ const esbuild = {
   jsxFactory: "h",
   jsxFragment: "Fragment",
 };
+
+async function pathExists(path: string) {
+  return fs
+    .access(path)
+    .then(() => true)
+    .catch(() => false);
+}
+
+async function copyDir(from: string, to: string) {
+  await fs.mkdir(to, { recursive: true });
+  const entries = await fs.readdir(from, { withFileTypes: true });
+
+  await Promise.all(
+    entries.map((entry) => {
+      const source = resolve(from, entry.name);
+      const target = resolve(to, entry.name);
+      return entry.isDirectory()
+        ? copyDir(source, target)
+        : fs.copyFile(source, target);
+    }),
+  );
+}
 
 // from https://github.com/sveltejs/kit/blob/master/packages/kit/src/core/adapt/prerender.js
 export function cleanHtml(html: string) {
@@ -83,7 +104,7 @@ export async function compile(outDir: string, tempDir: string) {
     resolve(outDir, relative(".", tempDir), "./app.html"),
     resolve(tempDir, "./index.html"),
   );
-  if (fse.existsSync(resolve(tempDir, "./style.css"))) {
+  if (await pathExists(resolve(tempDir, "./style.css"))) {
     await fs.copyFile(
       resolve(tempDir, "./style.css"),
       resolve(outDir, "./assets/style.css"),
@@ -122,13 +143,11 @@ async function startExport(config: Config) {
 
   const tempDir = resolve(outDir, ".temp/");
 
-  fse.rmSync(outDir, { force: true, recursive: true });
+  await fs.rm(outDir, { force: true, recursive: true });
   await compile(outDir, tempDir);
 
-  if (fse.existsSync(publicDir)) {
-    fse.copySync(publicDir, outDir, {
-      overwrite: true,
-    });
+  if (await pathExists(publicDir)) {
+    await copyDir(publicDir, outDir);
   }
 
   const template = await fs.readFile(resolve(tempDir, "index.html"), "utf8");

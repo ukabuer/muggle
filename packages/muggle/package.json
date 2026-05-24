@@ -35,7 +35,6 @@
     "cac": "^7.0.0",
     "esbuild": "^0.28.0",
     "find-my-way": "^9.6.0",
-    "fs-extra": "^11.3.5",
     "polka": "^0.5.2",
     "preact-render-to-string": "^6.7.0",
     "sirv": "^3.0.2",
@@ -43,7 +42,6 @@
     "vite": "^8.0.14"
   },
   "devDependencies": {
-    "@types/fs-extra": "^11.0.4",
     "@types/node": "^25.9.1",
     "@types/polka": "^0.5.8"
   },
