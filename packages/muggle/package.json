@@ -31,19 +31,18 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@hono/node-server": "^2.0.3",
     "@vanilla-extract/integration": "^8.0.10",
     "cac": "^7.0.0",
     "esbuild": "^0.28.0",
     "find-my-way": "^9.6.0",
-    "polka": "^0.5.2",
+    "hono": "^4.12.22",
     "preact-render-to-string": "^6.7.0",
-    "sirv": "^3.0.2",
     "typescript": "^6.0.3",
     "vite": "^8.0.14"
   },
   "devDependencies": {
-    "@types/node": "^25.9.1",
-    "@types/polka": "^0.5.8"
+    "@types/node": "^25.9.1"
   },
   "peerDependencies": {
     "preact": "^10.29.2"

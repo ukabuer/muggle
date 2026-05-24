@@ -1,7 +1,10 @@
 import fs from "fs/promises";
+import type { Server } from "node:http";
 import { resolve } from "node:path";
-import sirv from "sirv";
-import polka, { Polka } from "polka";
+import { serve, type HttpBindings } from "@hono/node-server";
+import { serveStatic } from "@hono/node-server/serve-static";
+import { RESPONSE_ALREADY_SENT } from "@hono/node-server/utils/response";
+import { Hono } from "hono";
 import { createServer } from "vite";
 import { Config } from "./export.js";
 import { createEntryScripts, getTemplateHTML } from "./prepare.js";
@@ -11,19 +14,13 @@ interface DevConfig extends Config {
   port: number;
 }
 
-const CustomTypeToContentType: Record<string, string> = {
-  ".html": "text/html",
-  ".xml": "application/xml",
-  ".json": "application/json",
-};
-
 const esbuild = {
   jsx: "transform" as const,
   jsxFactory: "h",
   jsxFragment: "Fragment",
 };
 
-export async function startDevServer(config: DevConfig): Promise<Polka> {
+export async function startDevServer(config: DevConfig): Promise<Server> {
   const outDir = config.out.endsWith("/") ? config.out : `${config.out}/`;
   const publicDir = config.public;
   const port = config.port;
@@ -32,15 +29,9 @@ export async function startDevServer(config: DevConfig): Promise<Polka> {
   await fs.mkdir(tempDir, { recursive: true });
   const entryScripts = await createEntryScripts(tempDir);
 
-  const app = polka();
+  const app = new Hono<{ Bindings: HttpBindings }>();
 
-  try {
-    if (await fs.stat(publicDir)) {
-      app.use(sirv(publicDir));
-    }
-  } catch {
-    void 0;
-  }
+  app.use("*", serveStatic({ root: publicDir }));
 
   const originHtml = getTemplateHTML();
 
@@ -55,70 +46,66 @@ export async function startDevServer(config: DevConfig): Promise<Polka> {
     ssr: {},
     appType: "custom",
   });
-  app.use(vite.middlewares);
+  app.use("*", async (c, next) => {
+    await new Promise<void>((resolve, reject) => {
+      vite.middlewares(c.env.incoming, c.env.outgoing, (error?: unknown) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+        resolve();
+      });
+    });
 
-  app.use("*", async (req, res, next) => {
-    const url = req.originalUrl;
+    if (c.env.outgoing.headersSent) {
+      return RESPONSE_ALREADY_SENT;
+    }
+
+    await next();
+  });
+
+  app.get("*", async (c) => {
+    const url = new URL(c.req.url).pathname;
 
     try {
       const template = await vite.transformIndexHtml(url, originHtml);
       const { render } = await vite.ssrLoadModule(entryScripts.server);
-      // TODO: type for render data
       const rendered = (await render(url, false)) as RenderResult;
       if (!rendered) {
-        res.writeHead(404, { "Content-Type": "text/plain" });
-        res.end("Not Found.");
-        return;
+        return c.text("Not Found.", 404);
       }
 
       if (rendered.custom) {
-        res.writeHead(200);
-        res.end(rendered.content);
-      } else {
-        const [head, _, body] = rendered.content;
-        let html = template.replace("<!-- HEAD -->", head);
-        html = html.replace("<main></main>", body);
-
-        res.writeHead(200, { "Content-Type": "text/html" });
-        res.end(html);
+        return c.body(rendered.content);
       }
+
+      const [head, _, body] = rendered.content;
+      let html = template.replace("<!-- HEAD -->", head);
+      html = html.replace("<main></main>", body);
+
+      return c.html(html);
     } catch (e: unknown) {
       if (e instanceof Error) {
         console.log(e);
         vite.ssrFixStacktrace(e);
-        next(e);
-      } else {
-        next("Error");
       }
+      throw e;
     }
   });
 
-  return new Promise((resolve) => {
-    app.listen(port, () => {
-      console.log(`> Running on http://localhost:${port.toString()}`);
-      resolve(app);
-    });
-  });
+  return serve({ fetch: app.fetch, port }, () => {
+    console.log(`> Running on http://localhost:${port.toString()}`);
+  }) as Server;
 }
 
-export async function startPreviewServer(config: DevConfig) {
+export async function startPreviewServer(config: DevConfig): Promise<Server> {
   const outDir = config.out.endsWith("/") ? config.out : `${config.out}/`;
   const port = config.port;
+  const app = new Hono();
 
-  const app = polka();
+  app.use("*", serveStatic({ root: outDir }));
 
-  try {
-    if (await fs.stat(outDir)) {
-      app.use(sirv(outDir));
-    }
-  } catch {
-    void 0;
-  }
-
-  return new Promise((resolve) => {
-    app.listen(port, () => {
-      console.log(`> Running on http://localhost:${port.toString()}`);
-      resolve(app);
-    });
-  });
+  return serve({ fetch: app.fetch, port }, () => {
+    console.log(`> Running on http://localhost:${port.toString()}`);
+  }) as Server;
 }
