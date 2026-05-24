@@ -3,10 +3,11 @@
   "exclude": ["node_modules", "dist"],
   "compilerOptions": {
     "outDir": "dist",
+    "rootDir": "src",
     "target": "ESNext",
     "lib": ["esnext"],
-    "module": "ESNext",
-    "moduleResolution": "node",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "noImplicitOverride": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,

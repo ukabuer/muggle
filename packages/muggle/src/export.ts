@@ -9,6 +9,12 @@ import { transformPathToRoute } from "./routing.js";
 import { RenderResult } from "./render.js";
 import { vanillaExtractPlugin } from "./plugins/vanilla-extract.js";
 
+const esbuild = {
+  jsx: "transform" as const,
+  jsxFactory: "h",
+  jsxFragment: "Fragment",
+};
+
 // from https://github.com/sveltejs/kit/blob/master/packages/kit/src/core/adapt/prerender.js
 export function cleanHtml(html: string) {
   return html
@@ -36,6 +42,7 @@ export async function compile(outDir: string, tempDir: string) {
     mode: "production",
     publicDir: false,
     logLevel: "warn",
+    esbuild,
     plugins: [vanillaExtractPlugin()],
     build: {
       lib: {
@@ -58,6 +65,7 @@ export async function compile(outDir: string, tempDir: string) {
     mode: "production",
     publicDir: false,
     // logLevel: "warn",
+    esbuild,
     plugins: [vanillaExtractPlugin()],
     build: {
       rollupOptions: {

@@ -213,10 +213,8 @@ export function enablePJAX(islands: Record<string, ComponentModule>) {
           }
         }
 
-        if (tag === "script") {
-          newItem = cloneScriptTag(newItem);
-        }
-        document.head.appendChild(newItem);
+        const item = tag === "script" ? cloneScriptTag(newItem) : newItem;
+        document.head.appendChild(item);
       });
     }
 

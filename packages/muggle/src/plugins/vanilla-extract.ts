@@ -115,7 +115,7 @@ export function vanillaExtractPlugin({
           const rootRelativeId = `${fileScope.filePath}${virtualExtCss}`;
           const absoluteId = getAbsoluteVirtualFileId(rootRelativeId);
 
-          let cssSource = source;
+          const cssSource = source;
 
           if (
             server &&
@@ -131,8 +131,11 @@ export function vanillaExtractPlugin({
               moduleGraph.invalidateModule(module);
 
               // Vite uses this timestamp to add `?t=` query string automatically for HMR.
+              const invalidatedModule = module as typeof module & {
+                lastInvalidationTimestamp?: number;
+              };
               module.lastHMRTimestamp =
-                (module as any).lastInvalidationTimestamp || Date.now();
+                invalidatedModule.lastInvalidationTimestamp || Date.now();
             }
           }
 

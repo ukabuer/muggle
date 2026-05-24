@@ -1,5 +1,5 @@
 import { options, h, Fragment, ComponentType, FunctionComponent } from "preact";
-import renderToString from "preact-render-to-string";
+import { renderToString } from "preact-render-to-string";
 import { createRouter } from "./routing.js";
 import { ComponentModule } from "./hydrate.js";
 import {

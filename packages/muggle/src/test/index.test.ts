@@ -1,5 +1,5 @@
-import assert from "assert";
-import { describe, it } from "test";
+import assert from "node:assert";
+import { describe, it } from "node:test";
 
 describe("A suite", function () {
   it("it should work", function () {

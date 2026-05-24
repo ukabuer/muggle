@@ -57,7 +57,7 @@ const Head: FunctionComponent = ({ children }) => {
       case "script": {
         if (
           typeof node.props.children === "string" &&
-          !node.hasOwnProperty("dangerouslySetInnerHTML")
+          !Object.hasOwn(node, "dangerouslySetInnerHTML")
         ) {
           const newNode = cloneElement(node, {
             dangerouslySetInnerHTML: {

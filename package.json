@@ -2,6 +2,6 @@
   "name": "muggle-packages",
   "workspaces": ["packages/muggle", "packages/muggle-site"],
   "devDependencies": {
-    "rome": "^12.0.0"
+    "rome": "^12.1.3"
   }
 }

@@ -17,6 +17,12 @@ const CustomTypeToContentType: Record<string, string> = {
   ".json": "application/json",
 };
 
+const esbuild = {
+  jsx: "transform" as const,
+  jsxFactory: "h",
+  jsxFragment: "Fragment",
+};
+
 export async function startDevServer(config: DevConfig): Promise<Polka> {
   const outDir = config.out.endsWith("/") ? config.out : `${config.out}/`;
   const publicDir = config.public;
@@ -41,6 +47,7 @@ export async function startDevServer(config: DevConfig): Promise<Polka> {
   const vite = await createServer({
     logLevel: "info",
     server: { middlewareMode: true },
+    esbuild,
     resolve: {
       dedupe: ["preact"],
     },
