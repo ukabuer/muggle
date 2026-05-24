@@ -34,7 +34,6 @@
     "@hono/node-server": "^2.0.3",
     "@vanilla-extract/integration": "^8.0.10",
     "cac": "^7.0.0",
-    "find-my-way": "^9.6.0",
     "hono": "^4.12.22",
     "preact-render-to-string": "^6.7.0",
     "typescript": "^6.0.3",

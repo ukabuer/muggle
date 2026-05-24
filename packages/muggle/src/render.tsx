@@ -203,27 +203,18 @@ export default function createRenderer(
   const router = createRouter(pages);
 
   return async (url: string, exportMode = false): Promise<RenderResult> => {
-    const matched = router.find("GET", url);
+    const matched = await router.match(url);
     if (!matched) {
       return null;
     }
 
-    const { handler, params, searchParams } = matched;
-    const store: { customExt?: string; page?: PageModule } = {};
-    // rome-ignore lint/suspicious/noExplicitAny: fake req/res
-    handler(null as any, null as any, params, store, searchParams);
-
-    if (!store.page) {
-      return null;
-    }
-
-    if (store.customExt) {
+    if (matched.customExt) {
       return {
         custom: true,
         content: await renderCustomPage(
           url,
-          params as Record<string, string>,
-          store.page,
+          matched.params,
+          matched.page,
           context,
         ),
       };
@@ -232,8 +223,8 @@ export default function createRenderer(
     context.exportMode = exportMode;
     const content = await renderPage(
       url,
-      params as Record<string, string>,
-      store.page,
+      matched.params,
+      matched.page,
       context,
     );
     return {
