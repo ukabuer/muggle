@@ -2,7 +2,6 @@ import { pathToFileURL } from "node:url";
 import { dirname, relative, resolve } from "node:path";
 import fs from "node:fs/promises";
 import { build } from "vite";
-import { transform } from "esbuild";
 import { createEntryScripts, createEntryHtml } from "./prepare.js";
 import { transformPathToRoute } from "./routing.js";
 import { RenderResult } from "./render.js";
@@ -34,6 +33,41 @@ async function copyDir(from: string, to: string) {
         : fs.copyFile(source, target);
     }),
   );
+}
+
+async function minifyCss(css: string, tempDir: string) {
+  const cssEntry = resolve(tempDir, "style.css");
+  await fs.writeFile(cssEntry, css);
+
+  const result = await build({
+    mode: "production",
+    publicDir: false,
+    logLevel: "silent",
+    build: {
+      cssMinify: true,
+      emptyOutDir: false,
+      minify: false,
+      rollupOptions: {
+        input: cssEntry,
+      },
+      write: false,
+    },
+  });
+  const outputs = Array.isArray(result) ? result : [result];
+  for (const output of outputs) {
+    if (!("output" in output)) {
+      continue;
+    }
+
+    const asset = output.output.find(
+      (item) => item.type === "asset" && item.fileName.endsWith(".css"),
+    );
+    if (asset?.type === "asset" && typeof asset.source === "string") {
+      return asset.source;
+    }
+  }
+
+  return css;
 }
 
 // from https://github.com/sveltejs/kit/blob/master/packages/kit/src/core/adapt/prerender.js
@@ -238,11 +272,8 @@ async function startExport(config: Config) {
     resolved.add(url);
   }
 
-  const { code: minifiedCSS } = await transform(allPageStyles, {
-    loader: "css",
-    minify: true,
-  });
-  await fs.writeFile(resolve(outDir, "assets/style.css"), minifiedCSS);
+  const minifiedCss = await minifyCss(allPageStyles, tempDir);
+  await fs.writeFile(resolve(outDir, "assets/style.css"), minifiedCss);
 
   const urls = await Promise.all(writeTasks);
   console.log("HTML exported:", urls);
