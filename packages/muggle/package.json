@@ -35,7 +35,6 @@
     "@vanilla-extract/integration": "^8.0.10",
     "cac": "^7.0.0",
     "hono": "^4.12.22",
-    "preact-render-to-string": "^6.7.0",
     "typescript": "^6.0.3",
     "vite": "^8.0.14"
   },
@@ -43,7 +42,8 @@
     "@types/node": "^25.9.1"
   },
   "peerDependencies": {
-    "preact": "^10.29.2"
+    "preact": "^10.29.2",
+    "preact-render-to-string": "^6.7.0"
   },
   "engines": {
     "node": ">=14"

@@ -5,7 +5,7 @@ import { type HttpBindings, serve } from "@hono/node-server";
 import { serveStatic } from "@hono/node-server/serve-static";
 import { RESPONSE_ALREADY_SENT } from "@hono/node-server/utils/response";
 import { Hono } from "hono";
-import { createServer } from "vite";
+import { createServer, type ModuleNode } from "vite";
 import type { Config } from "./export.js";
 import { vanillaExtractPlugin } from "./plugins/vanilla-extract.js";
 import { createEntryScripts, getTemplateHTML } from "./prepare.js";
@@ -14,12 +14,6 @@ import type { RenderResult } from "./render.js";
 interface DevConfig extends Config {
   port: number;
 }
-
-const esbuild = {
-  jsx: "transform" as const,
-  jsxFactory: "h",
-  jsxFragment: "Fragment",
-};
 
 export async function startDevServer(config: DevConfig): Promise<Server> {
   const outDir = config.out.endsWith("/") ? config.out : `${config.out}/`;
@@ -30,23 +24,40 @@ export async function startDevServer(config: DevConfig): Promise<Server> {
   await fs.mkdir(tempDir, { recursive: true });
   const entryScripts = await createEntryScripts(tempDir);
 
-  const app = new Hono<{ Bindings: HttpBindings }>();
-
-  app.use("*", serveStatic({ root: publicDir }));
-
   const originHtml = getTemplateHTML();
 
   const vite = await createServer({
     logLevel: "info",
     server: { middlewareMode: true },
-    esbuild,
+    build: {},
+    esbuild: {
+      jsx: "transform",
+      jsxFactory: "h",
+      jsxFragment: "Fragment",
+    },
     resolve: {
-      dedupe: ["preact"],
+      alias: {
+        preact: resolve("./node_modules/preact"),
+        "preact-render-to-string": resolve(
+          "./node_modules/preact-render-to-string",
+        ),
+      },
+      dedupe: [
+        "preact",
+        "preact/hooks",
+        "preact/jsx-runtime",
+        "preact-render-to-string",
+      ],
     },
     plugins: [vanillaExtractPlugin()],
     ssr: {},
     appType: "custom",
   });
+
+  const app = new Hono<{ Bindings: HttpBindings }>();
+
+  app.use("*", serveStatic({ root: publicDir }));
+
   app.use("*", async (c, next) => {
     await new Promise<void>((resolve, reject) => {
       vite.middlewares(c.env.incoming, c.env.outgoing, (error?: unknown) => {
