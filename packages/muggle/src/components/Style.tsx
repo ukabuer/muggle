@@ -1,6 +1,6 @@
-import { h, FunctionComponent } from "preact";
-import { useServerRenderContext } from "../context.js";
 import crypto from "node:crypto";
+import { type FunctionComponent, h } from "preact";
+import { useServerRenderContext } from "../context.js";
 
 type Props = {
   inline?: boolean;
@@ -17,7 +17,6 @@ const Style: FunctionComponent<Props> = (props: Props) => {
   }
 
   if (props.inline || !context.exportMode) {
-    // rome-ignore lint: need use dangerouslySetInnerHTML
     return <style dangerouslySetInnerHTML={{ __html: css }}></style>;
   }
 

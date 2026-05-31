@@ -1,6 +1,6 @@
 import path from "node:path";
 import { Hono } from "hono";
-import { PageModule } from "./render.js";
+import type { PageModule } from "./render.js";
 
 export function transformPathToRoute(filepath: string): string {
   const ext = path.extname(filepath);
@@ -53,7 +53,7 @@ export function createRouter(pages: Record<string, PageModule>) {
       async function matchPath(path: string) {
         const store: { matched?: MatchedRoute } = {};
         const response = await app.request(path, {}, { store });
-        return response.status === 404 ? null : store.matched ?? null;
+        return response.status === 404 ? null : (store.matched ?? null);
       }
 
       return (await matchPath(url)) ?? (await matchPath(`${url}/`));

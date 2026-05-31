@@ -1,5 +1,5 @@
-import { h, FunctionComponent } from "preact";
 import { Head } from "muggle";
+import { type FunctionComponent, h } from "preact";
 import Layout from "../components/Layout";
 
 const AboutPage: FunctionComponent = () => (

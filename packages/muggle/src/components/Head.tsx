@@ -1,8 +1,8 @@
 import {
+  type ComponentChildren,
   cloneElement,
-  VNode,
-  ComponentChildren,
-  FunctionComponent,
+  type FunctionComponent,
+  type VNode,
 } from "preact";
 import { useServerRenderContext } from "../context.js";
 
@@ -25,7 +25,7 @@ const Head: FunctionComponent = ({ children }) => {
       continue;
     }
 
-    const type = node["type"];
+    const type = node.type;
     if (typeof type !== "string") {
       heads.others.push(node);
       continue;
@@ -43,10 +43,10 @@ const Head: FunctionComponent = ({ children }) => {
       }
       case "meta": {
         const props = node.props as Record<string, unknown>;
-        if (props["charSet"] || props["charset"]) {
+        if (props.charSet || props.charset) {
           heads.meta.charSet = node;
-        } else if (props["name"] && typeof props["name"] === "string") {
-          const name = props["name"];
+        } else if (props.name && typeof props.name === "string") {
+          const name = props.name;
           heads.meta.others[name] = node;
         } else {
           heads.others.push(node);

@@ -1,13 +1,19 @@
-import { options, h, Fragment, ComponentType, FunctionComponent } from "preact";
+import {
+  type ComponentType,
+  Fragment,
+  type FunctionComponent,
+  h,
+  options,
+} from "preact";
 import { renderToString } from "preact-render-to-string";
-import { createRouter } from "./routing.js";
-import { ComponentModule } from "./hydrate.js";
+import { AppContext } from "./client.js";
 import {
   ServerRenderContext,
-  ServerRenderContextData,
+  type ServerRenderContextData,
   useServerRenderContext,
 } from "./context.js";
-import { AppContext } from "./client.js";
+import type { ComponentModule } from "./hydrate.js";
+import { createRouter } from "./routing.js";
 
 export type CustomRenderFn = (
   params: Record<string, string>,
@@ -82,7 +88,6 @@ export const Scripts: FunctionComponent = () => {
     <script
       id="__MUGGLE_ISLAND_PROPS"
       type="application/json"
-      // rome-ignore lint: need use dangerouslySetInnerHTML
       dangerouslySetInnerHTML={{
         __html: JSON.stringify(islandsProps),
       }}
@@ -141,7 +146,7 @@ async function renderPage(
 }
 
 async function renderCustomPage(
-  path: string,
+  _path: string,
   params: Record<string, string>,
   page: PageModule,
   context: ServerRenderContextData,

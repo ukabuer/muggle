@@ -1,6 +1,12 @@
-import { hydrate, render, ComponentType, h, FunctionComponent } from "preact";
-import { AppContext, EventsManager } from "./client.js";
+import {
+  type ComponentType,
+  type FunctionComponent,
+  h,
+  hydrate,
+  render,
+} from "preact";
 import { useEffect, useState } from "preact/hooks";
+import { AppContext, EventsManager } from "./client.js";
 
 export type ComponentModule = {
   default: ComponentType<unknown>;
@@ -39,7 +45,7 @@ const AppContextWrapper: FunctionComponent = ({ children }) => {
   );
 };
 
-// rome-ignore lint/suspicious/noExplicitAny: fake root nodes
+// biome-ignore lint/suspicious/noExplicitAny: fake root nodes
 let HydratedIslands: Record<string, any> = {};
 
 export default function hydrateIslands(
@@ -116,11 +122,11 @@ export default function hydrateIslands(
       <AppContextWrapper>
         <HComponent {...props} />
       </AppContextWrapper>,
-      // rome-ignore lint/suspicious/noExplicitAny: fake root node
+      // biome-ignore lint/suspicious/noExplicitAny: fake root node
       fakeRoot as any,
     );
 
-    // rome-ignore lint/suspicious/noExplicitAny: fake root node
+    // biome-ignore lint/suspicious/noExplicitAny: fake root node
     HydratedIslands[id] = fakeRoot as any;
 
     console.log(`Hydrated for id=${index}, name=${componentName}`);
@@ -147,8 +153,8 @@ function cloneScriptTag(node: Element) {
 
 export function enablePJAX(islands: Record<string, ComponentModule>) {
   let loading = false;
-  let leaving = false;
-  let entering = false;
+  let _leaving = false;
+  let _entering = false;
   let location = window.location.href;
   let targetLocation = "";
   let wrapper: Element | null = null;
@@ -176,19 +182,19 @@ export function enablePJAX(islands: Record<string, ComponentModule>) {
     }
 
     // remove old content
-    leaving = true;
+    _leaving = true;
     // maybe await some transition here
     // unmount hydrated islands
     Object.values(HydratedIslands).forEach((old) => {
-      // rome-ignore lint/suspicious/noExplicitAny: islands are mounted with fake root node
+      // biome-ignore lint/suspicious/noExplicitAny: islands are mounted with fake root node
       render(null, old as any);
     });
     HydratedIslands = {};
     parent.removeChild(oldContent);
-    leaving = false;
+    _leaving = false;
 
     // add new content
-    entering = true;
+    _entering = true;
     const newContent = page.querySelector(PJAXWrapperSelector);
     if (!newContent) {
       window.location.href = targetLocation;
@@ -238,7 +244,7 @@ export function enablePJAX(islands: Record<string, ComponentModule>) {
     hydrateIslands(islands);
 
     // maybe await some transition here
-    entering = false;
+    _entering = false;
     return true;
   };
 
@@ -321,7 +327,7 @@ export function enablePJAX(islands: Record<string, ComponentModule>) {
     }
   };
 
-  const onPopstate = (ev: PopStateEvent) => {
+  const onPopstate = (_ev: PopStateEvent) => {
     const curURL = new URL(location);
     if (window.location.pathname === curURL.pathname && !loading) {
       return false;

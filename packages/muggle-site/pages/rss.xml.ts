@@ -1,4 +1,4 @@
-import { ServerRenderContextData } from "muggle";
+import type { ServerRenderContextData } from "muggle";
 
 type Post = {
   title: string;
@@ -8,8 +8,8 @@ type Post = {
 };
 
 export default (
-  params: Record<string, string>,
-  context: ServerRenderContextData,
+  _params: Record<string, string>,
+  _context: ServerRenderContextData,
   data: Post[],
 ) => {
   return `
@@ -39,7 +39,9 @@ export default (
 `;
 };
 
-export async function preload(params: Record<string, string>): Promise<Post[]> {
+export async function preload(
+  _params: Record<string, string>,
+): Promise<Post[]> {
   return [
     {
       title: "Post 1",

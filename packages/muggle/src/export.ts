@@ -1,11 +1,11 @@
-import { pathToFileURL } from "node:url";
-import { dirname, relative, resolve } from "node:path";
 import fs from "node:fs/promises";
+import { dirname, relative, resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 import { build } from "vite";
-import { createEntryScripts, createEntryHtml } from "./prepare.js";
-import { transformPathToRoute } from "./routing.js";
-import { RenderResult } from "./render.js";
 import { vanillaExtractPlugin } from "./plugins/vanilla-extract.js";
+import { createEntryHtml, createEntryScripts } from "./prepare.js";
+import type { RenderResult } from "./render.js";
+import { transformPathToRoute } from "./routing.js";
 
 const esbuild = {
   jsx: "transform" as const,
@@ -116,7 +116,7 @@ export async function compile(outDir: string, tempDir: string) {
     },
   });
 
-  const compiler = await build({
+  const _compiler = await build({
     mode: "production",
     publicDir: false,
     // logLevel: "warn",

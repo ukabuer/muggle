@@ -1,7 +1,7 @@
-import { h, FunctionComponent } from "preact";
-import Header from "./Header";
-import Loading from "../islands/Loading";
 import { Head, Style } from "muggle";
+import { type FunctionComponent, h } from "preact";
+import Loading from "../islands/Loading";
+import Header from "./Header";
 import css from "./style.scss?inline";
 
 const Layout: FunctionComponent = ({ children }) => {

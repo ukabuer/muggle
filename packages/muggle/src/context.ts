@@ -1,4 +1,4 @@
-import { createContext, VNode } from "preact";
+import { createContext, type VNode } from "preact";
 import { useContext } from "preact/hooks";
 
 export type ServerRenderContextData = {

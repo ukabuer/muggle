@@ -1,14 +1,15 @@
 /** based on https://github.com/vanilla-extract-css/vanilla-extract/blob/ab72774f28c9bb839c97fdee6e7c11e1a82276dc/packages/vite-plugin/src/index.ts */
-import path from "path";
+
+import path from "node:path";
+import {
+  type CompileOptions,
+  compile,
+  cssFileFilter,
+  type IdentifierOption,
+  processVanillaFile,
+} from "@vanilla-extract/integration";
 import type { Plugin, ResolvedConfig, ViteDevServer } from "vite";
 import { normalizePath } from "vite";
-import {
-  cssFileFilter,
-  processVanillaFile,
-  compile,
-  IdentifierOption,
-  CompileOptions,
-} from "@vanilla-extract/integration";
 
 const virtualExtCss = ".vanilla.css";
 
@@ -33,7 +34,7 @@ export function vanillaExtractPlugin({
     configureServer(_server) {
       server = _server;
     },
-    config(_userConfig, env) {
+    config(_userConfig, _env) {
       return {
         ssr: {
           external: [
@@ -82,7 +83,7 @@ export function vanillaExtractPlugin({
 
       return css;
     },
-    async transform(code, id, ssrParam) {
+    async transform(_code, id, _ssrParam) {
       const [validId] = id.split("?");
 
       if (!cssFileFilter.test(validId)) {

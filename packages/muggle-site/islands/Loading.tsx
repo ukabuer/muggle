@@ -1,5 +1,5 @@
-import { h, FunctionComponent } from "preact";
 import { useAppContext } from "muggle";
+import { type FunctionComponent, h } from "preact";
 
 const Loading: FunctionComponent = () => {
   const { loading } = useAppContext();

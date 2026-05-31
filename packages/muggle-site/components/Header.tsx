@@ -1,5 +1,5 @@
-import { h, FunctionalComponent } from "preact";
 import { Head, Style, useAppContext } from "muggle";
+import { type FunctionalComponent, h } from "preact";
 import * as styles from "./header.css.js";
 
 const Header: FunctionalComponent = () => {

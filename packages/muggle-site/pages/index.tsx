@@ -1,9 +1,9 @@
-import { h, FunctionComponent } from "preact";
-import { Head, Style } from "muggle";
-import Counter from "../islands/Counter";
 import { randomUUID } from "node:crypto";
-import css from "./style.scss?inline";
+import { Head, Style } from "muggle";
+import { type FunctionComponent, h } from "preact";
 import Layout from "../components/Layout";
+import Counter from "../islands/Counter";
+import css from "./style.scss?inline";
 
 type Props = {
   page: string;

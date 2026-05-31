@@ -1,5 +1,5 @@
-import { h, FunctionComponent } from "preact";
 import { Head } from "muggle";
+import { type FunctionComponent, h } from "preact";
 import Layout from "../../components/Layout";
 
 type Props = {
@@ -19,7 +19,7 @@ const PostPage: FunctionComponent<Props> = ({ page }: Props) => (
 export async function preload(params: Record<string, string>) {
   return new Promise((resolve) => {
     setTimeout(() => {
-      resolve(`This is post ${params["post"]}`);
+      resolve(`This is post ${params.post}`);
     }, 100);
   });
 }

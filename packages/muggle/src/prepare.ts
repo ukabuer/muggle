@@ -1,5 +1,5 @@
-import fs from "fs/promises";
-import { resolve } from "path";
+import fs from "node:fs/promises";
+import { resolve } from "node:path";
 
 export function getTemplateHTML() {
   return `

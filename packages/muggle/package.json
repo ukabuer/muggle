@@ -22,7 +22,7 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc -w",
-    "ci": "rome ci src",
+    "ci": "biome ci src",
     "test": "node --test dist/test/*.test.js",
     "pretest": "tsc",
     "prepack": "tsc"

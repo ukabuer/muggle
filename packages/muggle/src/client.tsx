@@ -6,7 +6,7 @@ export type AppContextData = {
   loading: boolean;
 };
 
-// rome-ignore lint/suspicious/noExplicitAny:generic handler type
+// biome-ignore lint/suspicious/noExplicitAny:generic handler type
 type Hanlder = ((v: any) => void) | (() => void);
 class EventManager {
   all: Record<string, Array<Hanlder>>;
