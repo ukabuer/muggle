@@ -29,12 +29,17 @@ export async function startDevServer(config: DevConfig): Promise<Server> {
   const vite = await createServer({
     logLevel: "info",
     server: { middlewareMode: true },
-    build: {},
-    esbuild: {
-      jsx: "transform",
-      jsxFactory: "h",
-      jsxFragment: "Fragment",
+    plugins: [vanillaExtractPlugin()],
+    ssr: {},
+    appType: "custom",
+    oxc: {
+      jsx: {
+        runtime: "classic",
+        pragma: "h",
+        pragmaFrag: "Fragment",
+      },
     },
+    build: {},
     resolve: {
       dedupe: [
         "preact",
@@ -43,9 +48,6 @@ export async function startDevServer(config: DevConfig): Promise<Server> {
         "preact-render-to-string",
       ],
     },
-    plugins: [vanillaExtractPlugin()],
-    ssr: {},
-    appType: "custom",
   });
 
   const app = new Hono<{ Bindings: HttpBindings }>();

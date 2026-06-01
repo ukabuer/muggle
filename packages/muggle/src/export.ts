@@ -7,12 +7,6 @@ import { createEntryHtml, createEntryScripts } from "./prepare.js";
 import type { RenderResult } from "./render.js";
 import { transformPathToRoute } from "./routing.js";
 
-const esbuild = {
-  jsx: "transform" as const,
-  jsxFactory: "h",
-  jsxFragment: "Fragment",
-};
-
 async function pathExists(path: string) {
   return fs
     .access(path)
@@ -47,7 +41,7 @@ async function minifyCss(css: string, tempDir: string) {
       cssMinify: true,
       emptyOutDir: false,
       minify: false,
-      rollupOptions: {
+      rolldownOptions: {
         input: cssEntry,
       },
       write: false,
@@ -97,39 +91,58 @@ export async function compile(outDir: string, tempDir: string) {
     mode: "production",
     publicDir: false,
     logLevel: "warn",
-    esbuild,
     plugins: [vanillaExtractPlugin()],
-    build: {
-      lib: {
-        entry: entryScripts.server,
-        formats: ["es"],
-        name: "entry-server",
-        fileName: "entry-server",
+    oxc: {
+      jsx: {
+        runtime: "classic",
+        pragma: "h",
+        pragmaFrag: "Fragment",
       },
-      rollupOptions: {
-        external: ["muggle", "muggle/render"],
+    },
+    build: {
+      rolldownOptions: {
+        input: entryScripts.server,
+        platform: "node",
       },
       minify: false,
       ssr: true,
       emptyOutDir: false,
       outDir: tempDir,
     },
+    resolve: {
+      dedupe: [
+        "preact",
+        "preact/hooks",
+        "preact/jsx-runtime",
+        "preact-render-to-string",
+      ],
+    },
   });
 
-  const _compiler = await build({
+  await build({
     mode: "production",
     publicDir: false,
     // logLevel: "warn",
-    esbuild,
     plugins: [vanillaExtractPlugin()],
+    oxc: {
+      jsx: {
+        runtime: "classic",
+        pragma: "h",
+        pragmaFrag: "Fragment",
+      },
+    },
     build: {
-      rollupOptions: {
+      rolldownOptions: {
         input: entryHTMLPath,
+        platform: "browser",
       },
       minify: true,
       emptyOutDir: false,
       manifest: false,
       outDir,
+    },
+    resolve: {
+      dedupe: ["preact", "preact/hooks"],
     },
   });
 
@@ -147,23 +160,6 @@ export async function compile(outDir: string, tempDir: string) {
   await fs.rm(resolve(outDir, "./dist"), { recursive: true });
 
   return true;
-  // if (compiler) {
-  //   return new Promise((resolve, reject) => {
-  //     compiler.addListener("event", (event) => {
-  //       if (event.code === "BUNDLE_END") {
-  //         resolve(true);
-  //         compiler.removeAllListeners();
-  //         return;
-  //       }
-
-  //       if (event.code === "ERROR") {
-  //         reject(event.error);
-  //         compiler.removeAllListeners();
-  //         return;
-  //       }
-  //     });
-  //   });
-  // }
 }
 
 export interface Config {
