@@ -1,6 +1,7 @@
 import { Head, Style, useAppContext } from "muggle";
 import { type FunctionalComponent, h } from "preact";
-import * as styles from "./header.css.js";
+import styles from "./header.module.css";
+import css from "./header.module.css?inline";
 
 const Header: FunctionalComponent = () => {
   const { path } = useAppContext();
@@ -16,13 +17,13 @@ const Header: FunctionalComponent = () => {
   return (
     <header>
       <Head>
-        <Style>{styles.default}</Style>
+        <Style>{css}</Style>
       </Head>
       {navs.map((nav) => (
         <a
           id={nav.path}
           href={nav.path}
-          className={path === nav.path ? styles.actvieLink : styles.link}
+          className={path === nav.path ? styles.activeLink : styles.link}
         >
           {nav.title}
         </a>

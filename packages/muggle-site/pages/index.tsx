@@ -3,7 +3,8 @@ import { Head, Style } from "muggle";
 import { type FunctionComponent, h } from "preact";
 import Layout from "../components/Layout";
 import Counter from "../islands/Counter";
-import css from "./style.scss?inline";
+import styles from "./style.module.css";
+import css from "./style.module.css?inline";
 
 type Props = {
   page: string;
@@ -18,7 +19,7 @@ const IndexPage: FunctionComponent<Props> = ({ page }: Props) => (
     <p>This is index page</p>
     <p>Async data: {page}</p>
     <p>Random UUID using `node:crypto`: {randomUUID()}</p>
-    <div>
+    <div className={styles.wrapper}>
       <span>An interactive counter: </span>
       <Counter initial={0} />
     </div>

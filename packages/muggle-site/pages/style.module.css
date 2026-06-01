@@ -1,4 +1,4 @@
-button + span {
+.wrapper button + span {
   margin: 0 12px;
   color: red;
   font-weight: bold;

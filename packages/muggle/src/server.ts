@@ -5,9 +5,8 @@ import { type HttpBindings, serve } from "@hono/node-server";
 import { serveStatic } from "@hono/node-server/serve-static";
 import { RESPONSE_ALREADY_SENT } from "@hono/node-server/utils/response";
 import { Hono } from "hono";
-import { createServer, type ModuleNode } from "vite";
-import type { Config } from "./export.js";
-import { vanillaExtractPlugin } from "./plugins/vanilla-extract.js";
+import { createServer } from "vite";
+import { type Config, suppressCssPlugin } from "./export.js";
 import { createEntryScripts, getTemplateHTML } from "./prepare.js";
 import type { RenderResult } from "./render.js";
 
@@ -29,7 +28,7 @@ export async function startDevServer(config: DevConfig): Promise<Server> {
   const vite = await createServer({
     logLevel: "info",
     server: { middlewareMode: true },
-    plugins: [vanillaExtractPlugin()],
+    plugins: [suppressCssPlugin()],
     ssr: {},
     appType: "custom",
     oxc: {

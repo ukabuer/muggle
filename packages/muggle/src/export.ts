@@ -1,8 +1,7 @@
 import fs from "node:fs/promises";
 import { dirname, relative, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
-import { build } from "vite";
-import { vanillaExtractPlugin } from "./plugins/vanilla-extract.js";
+import { build, type Plugin } from "vite";
 import { createEntryHtml, createEntryScripts } from "./prepare.js";
 import type { RenderResult } from "./render.js";
 import { transformPathToRoute } from "./routing.js";
@@ -79,6 +78,52 @@ export function getHref(attrs: string) {
   return match && (match[1] || match[2] || match[3]);
 }
 
+export function suppressCssPlugin(): Plugin {
+  return {
+    name: "suppress-css",
+    enforce: "post",
+    generateBundle(_options, bundle) {
+      for (const key of Object.keys(bundle)) {
+        if (key.endsWith(".css")) {
+          delete bundle[key];
+        }
+      }
+    },
+    transformIndexHtml(html) {
+      return html.replace(/<link[^>]*\.css[^>]*\/?>/g, "");
+    },
+    transform(code, id) {
+      // In dev mode, Vite injects CSS via <style> tags for .module.css imports.
+      // Muggle handles CSS injection via <Style> component, so strip Vite's
+      // client-side CSS injection code. Keep variable definitions and exports intact.
+      // Only applies to client-side modules (SSR modules don't import /@vite/client).
+      if (
+        id.endsWith(".module.css") &&
+        !id.includes("?") &&
+        code.includes("/@vite/client")
+      ) {
+        const lines = code.split("\n").filter((line) => {
+          const trimmed = line.trim();
+          return (
+            !trimmed.startsWith("import {") ||
+            !trimmed.includes("/@vite/client")
+          );
+        }).filter((line) => {
+          const trimmed = line.trim();
+          return (
+            !trimmed.includes("__vite__updateStyle(") &&
+            !trimmed.includes("__vite__removeStyle(") &&
+            !trimmed.startsWith("import.meta.hot.prune") &&
+            !trimmed.startsWith("import.meta.hot.accept")
+          );
+        });
+        return lines.join("\n");
+      }
+      return code;
+    },
+  };
+}
+
 export async function compile(outDir: string, tempDir: string) {
   await fs.mkdir(tempDir, { recursive: true });
 
@@ -91,7 +136,7 @@ export async function compile(outDir: string, tempDir: string) {
     mode: "production",
     publicDir: false,
     logLevel: "warn",
-    plugins: [vanillaExtractPlugin()],
+    plugins: [],
     oxc: {
       jsx: {
         runtime: "classic",
@@ -123,7 +168,7 @@ export async function compile(outDir: string, tempDir: string) {
     mode: "production",
     publicDir: false,
     // logLevel: "warn",
-    plugins: [vanillaExtractPlugin()],
+    plugins: [suppressCssPlugin()],
     oxc: {
       jsx: {
         runtime: "classic",

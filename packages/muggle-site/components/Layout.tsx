@@ -2,7 +2,7 @@ import { Head, Style } from "muggle";
 import { type FunctionComponent, h } from "preact";
 import Loading from "../islands/Loading";
 import Header from "./Header";
-import css from "./style.scss?inline";
+import css from "./style.module.css?inline";
 
 const Layout: FunctionComponent = ({ children }) => {
   return (
