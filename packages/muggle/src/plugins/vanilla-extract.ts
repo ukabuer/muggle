@@ -83,7 +83,7 @@ export function vanillaExtractPlugin({
 
       return css;
     },
-    async transform(_code, id, _ssrParam) {
+    async transform(_code, id, _options) {
       const [validId] = id.split("?");
 
       if (!cssFileFilter.test(validId)) {
@@ -107,6 +107,9 @@ export function vanillaExtractPlugin({
           this.addWatchFile(file);
         }
       }
+
+      let cssImportIndex = 0;
+      let mainFileCssIdentifier = "";
 
       const output = await processVanillaFile({
         source,
@@ -142,15 +145,25 @@ export function vanillaExtractPlugin({
 
           cssMap.set(absoluteId, cssSource);
 
+          const identifier = `__vanilla_css_${cssImportIndex}__`;
+
+          const fileScopeAbsolutePath = normalizePath(
+            path.join(config.root, fileScope.filePath),
+          );
+          if (fileScopeAbsolutePath === validId) {
+            mainFileCssIdentifier = identifier;
+          }
+          cssImportIndex++;
+
           // We use the root relative id here to ensure file contents (content-hashes)
           // are consistent across build machines
-          return `import __vanilla_css__ from "${rootRelativeId}?inline";`;
+          return `import ${identifier} from "${rootRelativeId}?inline";`;
         },
       });
 
       const result = output.replace(
         `var __default__ = ''`,
-        "var __default__ = __vanilla_css__",
+        `var __default__ = ${mainFileCssIdentifier || "__vanilla_css_0__"}`,
       );
 
       return {

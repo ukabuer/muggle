@@ -36,12 +36,6 @@ export async function startDevServer(config: DevConfig): Promise<Server> {
       jsxFragment: "Fragment",
     },
     resolve: {
-      alias: {
-        preact: resolve("./node_modules/preact"),
-        "preact-render-to-string": resolve(
-          "./node_modules/preact-render-to-string",
-        ),
-      },
       dedupe: [
         "preact",
         "preact/hooks",
