@@ -33,7 +33,7 @@
   "dependencies": {
     "@hono/node-server": "^2.0.3",
     "cac": "^7.0.0",
-    "hono": "^4.12.22",
+    "hono": "^4.13.5",
     "typescript": "^6.0.3",
     "vite": "^8.0.14"
   },
